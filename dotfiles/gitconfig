@@ -1,0 +1,52 @@
+# ~/.gitconfig reference — managed by devenv-macos.
+# NOTE: these settings are applied programmatically via `git config --global`
+# by the dotfiles module (so user name/email and the resolved gh path are
+# filled in per-machine). This file is a human-readable reference of what
+# gets applied — it is not symlinked.
+
+[user]
+	name = DEVENV_GIT_NAME
+	email = DEVENV_GIT_EMAIL
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = vim
+	autocrlf = input
+	pager = less -FRX
+
+[pull]
+	rebase = true
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+
+[diff]
+	colorMoved = default
+
+[merge]
+	conflictstyle = diff3
+
+[alias]
+	lg = log --oneline --graph --decorate -20
+	st = status -sb
+	co = checkout
+	br = branch
+	cm = commit
+	last = log -1 HEAD --stat
+	unstage = reset HEAD --
+
+# gh credential helper — the module writes the resolved absolute path to gh
+# (e.g. /opt/homebrew/bin/gh) so git works from GUI apps that lack brew's PATH.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential

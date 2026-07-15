@@ -1,0 +1,102 @@
+# Ghostty — Windows-Terminal-style keybinds, adapted for macOS.
+# Pairs with the Karabiner keymap (~/.config/karabiner/karabiner.json):
+#   globe/fn -> Ctrl,  left-command -> Alt,  left-option -> Windows key.
+#
+# zellij muscle-memory: your Windows Alt (the key left of the spacebar =
+# physical Command) is remapped by Karabiner to Left Option; the line below
+# translates Left Option -> Meta so zellij's Alt+N / Alt+H/J/K/L / Alt+=/-
+# bindings fire. RIGHT Option is deliberately left untouched (terminal nav).
+macos-option-as-alt = left
+
+copy-on-select = clipboard
+
+# --- Clipboard (WT: ctrl+c / ctrl+shift+c copy, ctrl+shift+v paste) ---
+# NOTE: plain ctrl+v is deliberately UNBOUND so the keypress passes through to
+# the running app — Claude Code uses Ctrl+V to paste an IMAGE from the clipboard.
+# Terminal text-paste lives on Ctrl+Shift+V (the Windows Terminal default).
+keybind = performable:ctrl+c=copy_to_clipboard
+keybind = ctrl+shift+c=copy_to_clipboard
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+v=unbind
+
+# --- Newline for Claude Code (ESC+CR; WT itself sends \n) ---
+keybind = shift+enter=text:\x1b\r
+
+# --- Word navigation (globe=Ctrl + arrows). Atomic ESC-b / ESC-f in ONE PTY
+#     write so Claude Code's TUI parses it as Meta-b/f. ---
+keybind = ctrl+left=text:\x1bb
+keybind = ctrl+right=text:\x1bf
+
+# --- Word deletion (Windows-style). Ctrl+Backspace = ESC+DEL (zsh
+#     backward-kill-word), Ctrl+Delete = ESC+d (kill-word forward). ---
+keybind = ctrl+backspace=text:\x1b\x7f
+keybind = ctrl+delete=text:\x1bd
+
+# --- Tabs (WT) ---
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+keybind = ctrl+1=goto_tab:1
+keybind = ctrl+2=goto_tab:2
+keybind = ctrl+3=goto_tab:3
+keybind = ctrl+4=goto_tab:4
+keybind = ctrl+5=goto_tab:5
+
+# --- Splits (WT: ctrl+shift+\ = auto/duplicate, ctrl+shift+- = down) ---
+keybind = ctrl+shift+backslash=new_split:auto
+keybind = ctrl+shift+minus=new_split:down
+keybind = ctrl+shift+w=close_surface
+keybind = ctrl+shift+z=toggle_split_zoom
+keybind = ctrl+shift+n=new_window
+
+# --- Pane FOCUS on Cmd+arrows -> zellij MoveFocus (sends Alt+h/j/k/l). ---
+#     Cmd is the only clean lane for this: Option+arrow is eaten by Karabiner's
+#     [Win] window-snap, and Ghostty's own alt+arrow is word-motion (esc:b/f).
+#     So we translate Cmd+arrow into zellij's Alt+hjkl move-focus sequences.
+keybind = cmd+left=text:\x1bh
+keybind = cmd+down=text:\x1bj
+keybind = cmd+up=text:\x1bk
+keybind = cmd+right=text:\x1bl
+
+# --- Pane RESIZE (Command+Shift+arrows) ---
+keybind = cmd+shift+left=resize_split:left,10
+keybind = cmd+shift+right=resize_split:right,10
+keybind = cmd+shift+up=resize_split:up,10
+keybind = cmd+shift+down=resize_split:down,10
+
+# --- Scroll (Ctrl=globe: page; +Shift: line-by-line) / clear ---
+keybind = ctrl+shift+k=clear_screen
+keybind = ctrl+up=scroll_page_up
+keybind = ctrl+down=scroll_page_down
+keybind = ctrl+shift+up=scroll_page_lines:-1
+keybind = ctrl+shift+down=scroll_page_lines:1
+keybind = ctrl+shift+home=scroll_to_top
+keybind = ctrl+shift+end=scroll_to_bottom
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+
+# --- Font on Ctrl (WT); disable the Cmd font defaults ---
+keybind = ctrl+plus=increase_font_size:1
+keybind = ctrl+equal=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+0=reset_font_size
+keybind = cmd+plus=unbind
+keybind = cmd+equal=unbind
+keybind = cmd+minus=unbind
+keybind = cmd+0=unbind
+
+# --- Behavior ---
+shell-integration = zsh
+shell-integration-features = cursor,title,sudo,ssh-env
+window-save-state = always
+mouse-hide-while-typing = true
+scrollback-limit = 100000000
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = true
+clipboard-paste-bracketed-safe = true
+
+# --- Windows-feel + security ---
+# Close the last window => quit the app (Windows convention).
+quit-after-last-window-closed = true
+# macOS Secure Keyboard Entry on password prompts (sudo).
+macos-auto-secure-input = true

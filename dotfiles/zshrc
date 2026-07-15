@@ -1,0 +1,307 @@
+# ~/.zshrc — managed by devenv-macos (symlinked from this repo's dotfiles/zshrc)
+# Machine-specific customizations go in ~/.zshrc_private (NOT tracked).
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# ── Homebrew (must come first — everything below leans on it) ─
+# Apple silicon installs to /opt/homebrew; Intel to /usr/local.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# ── History ─────────────────────────────────────────────────
+# Eternal zsh history — unlimited size, timestamped, shared across sessions.
+HISTFILE=~/.zsh_eternal_history
+HISTSIZE=999999999
+SAVEHIST=999999999
+setopt APPEND_HISTORY         # append, don't overwrite
+setopt EXTENDED_HISTORY       # save timestamps
+setopt HIST_IGNORE_DUPS       # ignore consecutive duplicates
+setopt HIST_IGNORE_SPACE      # ignore lines starting with space
+setopt HIST_REDUCE_BLANKS     # trim excess whitespace
+setopt INC_APPEND_HISTORY     # write after every command (survives crashes)
+setopt HIST_VERIFY            # show substituted history before running
+setopt SHARE_HISTORY         # share history live across concurrent shells
+
+# ── Shell options ───────────────────────────────────────────
+setopt AUTO_CD                # cd by typing directory name
+setopt INTERACTIVE_COMMENTS   # allow # comments in interactive shell
+setopt NO_BEEP                # no beep on error
+setopt NO_FLOW_CONTROL        # disable Ctrl-S/Ctrl-Q (frees reverse-i-search)
+
+# ── Prompt ──────────────────────────────────────────────────
+# Git prompt mimicking bash-git-prompt Single_line_Minimalist theme.
+# In git repos:  ✔ 14:23:45 dirname [branch status] $
+# Outside repos: user@host:~/path%
+# (Pure zsh + git — fully macOS-compatible, no external dependency.)
+setopt PROMPT_SUBST
+
+# Gather git status and build prompt string (called from precmd).
+_git_prompt_info() {
+    local git_dir
+    git_dir=$(git rev-parse --git-dir 2>/dev/null) || return
+
+    local gitstatus
+    gitstatus=$(LC_ALL=C git --no-optional-locks status --porcelain --branch 2>/dev/null) || return
+
+    # -- parse porcelain output -----------------------------------------------
+    local branch_line="" branch="" ahead=0 behind=0 no_remote=0
+    local staged=0 conflicts=0 changed=0 untracked=0
+    local line xy
+    while IFS= read -r line; do
+        if [[ "$line" == "## "* ]]; then
+            branch_line="${line#\#\# }"
+            continue
+        fi
+        xy="${line:0:2}"
+        case "$xy" in
+            '??') ((untracked++)) ;;
+            U?|?U|DD|AA) ((conflicts++)) ;;
+            *)
+                [[ "${xy:1:1}" == "M" ]] && ((changed++))
+                [[ "${xy:0:1}" != " " ]] && ((staged++))
+                ;;
+        esac
+    done <<< "$gitstatus"
+
+    # -- branch & remote tracking ---------------------------------------------
+    if [[ "$branch_line" == "No commits yet on "* ]]; then
+        branch="${branch_line#No commits yet on }"
+        no_remote=1
+    elif [[ "$branch_line" == "Initial commit on "* ]]; then
+        branch="${branch_line#Initial commit on }"
+        no_remote=1
+    elif [[ "$branch_line" == *"no branch"* ]]; then
+        local tag
+        tag=$(git describe --tags --exact-match 2>/dev/null)
+        if [[ -n "$tag" ]]; then
+            branch="$tag"
+        else
+            branch=":$(git rev-parse --short HEAD 2>/dev/null)"
+        fi
+        no_remote=1
+    elif [[ "$branch_line" == *"..."* ]]; then
+        branch="${branch_line%%...*}"
+        local tracking="${branch_line#*...}"
+        [[ "$tracking" =~ 'ahead ([0-9]+)' ]] && ahead="${match[1]}"
+        [[ "$tracking" =~ 'behind ([0-9]+)' ]] && behind="${match[1]}"
+    else
+        branch="$branch_line"
+        no_remote=1
+    fi
+
+    # -- stash count -----------------------------------------------------------
+    local stashed=0
+    if [[ -e "$git_dir/logs/refs/stash" ]]; then
+        stashed=$(wc -l < "$git_dir/logs/refs/stash")
+        stashed="${stashed## }"
+    fi
+
+    # -- special git state (rebase, merge, …) ---------------------------------
+    local state=""
+    if [[ -d "$git_dir/rebase-merge" ]]; then
+        local step="" total=""
+        [[ -r "$git_dir/rebase-merge/msgnum" ]] && step=$(<"$git_dir/rebase-merge/msgnum")
+        [[ -r "$git_dir/rebase-merge/end" ]] && total=$(<"$git_dir/rebase-merge/end")
+        [[ -f "$git_dir/rebase-merge/interactive" ]] && state="|REBASE-i" || state="|REBASE-m"
+        [[ -n "$step" && -n "$total" ]] && state="$state $step/$total"
+    elif [[ -d "$git_dir/rebase-apply" ]]; then
+        local step="" total=""
+        [[ -r "$git_dir/rebase-apply/next" ]] && step=$(<"$git_dir/rebase-apply/next")
+        [[ -r "$git_dir/rebase-apply/last" ]] && total=$(<"$git_dir/rebase-apply/last")
+        if [[ -f "$git_dir/rebase-apply/rebasing" ]]; then state="|REBASE"
+        elif [[ -f "$git_dir/rebase-apply/applying" ]]; then state="|AM"
+        else state="|AM/REBASE"; fi
+        [[ -n "$step" && -n "$total" ]] && state="$state $step/$total"
+    elif [[ -f "$git_dir/MERGE_HEAD" ]]; then state="|MERGING"
+    elif [[ -f "$git_dir/CHERRY_PICK_HEAD" ]]; then state="|CHERRY-PICKING"
+    elif [[ -f "$git_dir/REVERT_HEAD" ]]; then state="|REVERTING"
+    elif [[ -f "$git_dir/BISECT_LOG" ]]; then state="|BISECTING"
+    fi
+
+    # -- remote tracking symbols (behind first, then ahead) --------------------
+    local remote=""
+    (( behind > 0 )) && remote+="↓·${behind}"
+    (( ahead  > 0 )) && remote+="↑·${ahead}"
+
+    # -- status indicators -----------------------------------------------------
+    local status_str=""
+    (( staged    > 0 )) && status_str+="%F{red}●%f${staged}"
+    (( conflicts > 0 )) && status_str+="%F{red}✖%f${conflicts}"
+    (( changed   > 0 )) && status_str+="%F{blue}✚%f${changed}"
+    (( untracked > 0 )) && status_str+="%F{cyan}…%f${untracked}"
+    (( stashed   > 0 )) && status_str+="%B%F{blue}⚑%f%b${stashed}"
+    [[ -z "$status_str" ]] && status_str="%B%F{green}✔%f%b"
+
+    # -- assemble: [branch|STATE remote sep status] ----------------------------
+    local result=" [%F{magenta}${branch}${state}%f"
+    [[ -n "$remote" ]] && result+=" ${remote}"
+    result+=" ${status_str}]"
+    echo "$result"
+}
+
+precmd() {
+    local last_exit=$?
+
+    local git_info
+    git_info=$(_git_prompt_info)
+
+    # Themed prompt inside git repos, standard prompt elsewhere.
+    if [[ -n "$git_info" ]]; then
+        local cmd_ind
+        (( last_exit == 0 )) && cmd_ind="%F{green}✔%f" || cmd_ind="%F{red}✘%f"
+        PS1="${cmd_ind} %F{white}%D{%H:%M:%S}%f %F{cyan}%1~%f${git_info} %(!.%B%F{red}#%f%b.$) "
+    else
+        PS1='%F{green}%n@%m%f:%F{blue}%~%f%# '
+    fi
+
+    # Set terminal title (works in Ghostty/xterm-likes).
+    case "$TERM" in
+        xterm*|rxvt*|ghostty*) print -Pn "\e]0;%n@%m: %~\a" ;;
+    esac
+}
+
+# ── Color support (macOS BSD tools) ─────────────────────────
+# BSD ls: CLICOLOR + LSCOLORS (not GNU dircolors/LS_COLORS).
+export CLICOLOR=1
+export LSCOLORS=ExGxBxDxCxEgEdxbxgxcxd
+alias ls='ls -G'
+alias grep='grep --color=auto'
+# If you prefer GNU coreutils (gls/ggrep with --color and LS_COLORS),
+# `brew install coreutils` and swap the aliases in ~/.zshrc_private.
+
+# ── Aliases ─────────────────────────────────────────────────
+# ls
+alias ll='ls -alFG'
+alias la='ls -AG'
+alias l='ls -CFG'
+
+# Safe file operations (interactive + verbose)
+alias mv="mv -iv"
+alias cp="cp -riv"
+alias rm="rm -iv"
+alias mkdir='mkdir -vp'
+
+# Git shortcuts
+alias gs='git status'
+alias gf='git fetch -p'
+alias gl='git log --oneline -20'
+alias gd='git diff'
+
+# Utility shortcuts (macOS variants)
+alias myip='curl -s ifconfig.me'
+alias ports='lsof -iTCP -sTCP:LISTEN -n -P'   # macOS: was `ss -tulnp` on Linux
+alias path='echo $PATH | tr ":" "\n"'
+alias df='df -h'
+alias du1='du -h -d 1 | sort -h'              # macOS du: -d 1 (was --max-depth=1)
+alias psg='ps aux | grep'
+alias flushdns='sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES && killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO && killall Finder'
+
+# ── Functions ───────────────────────────────────────────────
+# Extract any archive format
+extract() {
+    if [[ -f "$1" ]]; then
+        case "$1" in
+            *.tar.bz2)   tar xjf "$1"   ;;
+            *.tar.gz)    tar xzf "$1"   ;;
+            *.tar.xz)    tar xJf "$1"   ;;
+            *.bz2)       bunzip2 "$1"   ;;
+            *.rar)       unrar x "$1"   ;;
+            *.gz)        gunzip "$1"    ;;
+            *.tar)       tar xf "$1"    ;;
+            *.tbz2)      tar xjf "$1"   ;;
+            *.tgz)       tar xzf "$1"   ;;
+            *.zip)       unzip "$1"     ;;
+            *.Z)         uncompress "$1";;
+            *.7z)        7z x "$1"      ;;
+            *)           echo "'$1' cannot be extracted" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# ── Completion ──────────────────────────────────────────────
+# Put Homebrew's completions on fpath before compinit.
+if command -v brew >/dev/null 2>&1; then
+    fpath=("$(brew --prefix)/share/zsh/site-functions" $fpath)
+fi
+autoload -Uz compinit && compinit -i   # -i: skip insecure-directory prompt (brew dirs)
+
+# Case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+# Show completion menu on second tab
+zstyle ':completion:*' menu select
+# Color completions by file type
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+# Group completions by category
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '%F{yellow}── %d ──%f'
+
+# ── Key bindings ────────────────────────────────────────────
+# Use emacs-style keybindings (same as bash default)
+bindkey -e
+# Prefix-based history search with arrow keys (type `git ` then ↑ cycles git cmds)
+bindkey '^[[A' history-beginning-search-backward
+bindkey '^[[B' history-beginning-search-forward
+# Home/End
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
+bindkey '^[[1~' beginning-of-line
+bindkey '^[[4~' end-of-line
+# Delete
+bindkey '^[[3~' delete-char
+# Ctrl-Left/Right for word navigation (Ghostty sends ESC-b / ESC-f; also handle CSI)
+bindkey '^[[1;5D' backward-word
+bindkey '^[[1;5C' forward-word
+bindkey '^[b' backward-word
+bindkey '^[f' forward-word
+
+# ── fzf (fuzzy finder) — Ctrl-R history · Ctrl-T files · Alt-C cd ─
+# Provided by `brew install fzf`. The modern integration replaces the
+# hand-rolled Ctrl-R widget with a much better fuzzy search.
+if command -v fzf >/dev/null 2>&1; then
+    source <(fzf --zsh)
+fi
+
+# ── zsh aliases file ────────────────────────────────────────
+[[ -f ~/.zsh_aliases ]] && source ~/.zsh_aliases
+
+# ── Tool-managed PATH sections ──────────────────────────────
+# uv / pip — ~/.local/bin (also where the native `claude` CLI lives)
+if [[ -d "$HOME/.local/bin" ]]; then
+    case ":$PATH:" in
+        *":$HOME/.local/bin:"*) ;;
+        *) export PATH="$HOME/.local/bin:$PATH" ;;
+    esac
+fi
+
+# Rust / Cargo
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# fnm (Node.js version manager — installed via Homebrew)
+if command -v fnm >/dev/null 2>&1; then
+    eval "$(fnm env --shell zsh)"
+fi
+
+# ── Default editor ──────────────────────────────────────────
+export EDITOR=vim
+export VISUAL=vim
+
+# ── Optional: zellij auto-attach ────────────────────────────
+# Uncomment to auto-attach to a zellij session named "main" on every
+# interactive shell (creates it if absent). Left OFF by default so a
+# plain shell / SSH session doesn't force you into a multiplexer.
+# if command -v zellij >/dev/null 2>&1 && [[ -z "$ZELLIJ" ]]; then
+#     zellij attach main -c
+# fi
+
+# ── Private / machine-specific overrides ────────────────────
+# This file is NOT tracked in the repo. Put API keys, host-specific
+# aliases, conda init, work-specific config, etc. here.
+[[ -f "$HOME/.zshrc_private" ]] && source "$HOME/.zshrc_private"

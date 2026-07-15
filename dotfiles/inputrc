@@ -1,0 +1,37 @@
+# ~/.inputrc — readline configuration (used by bash, python REPL, and other
+# readline apps; zsh has its own bindings in ~/.zshrc).
+# Managed by devenv-macos (symlinked from this repo's dotfiles/inputrc)
+
+# ── Completion ──────────────────────────────────────────────
+set completion-ignore-case on
+set show-all-if-ambiguous on
+set visible-stats on
+set colored-stats on
+set colored-completion-prefix on
+set completion-map-case on
+
+# ── Editing ─────────────────────────────────────────────────
+set input-meta on
+set output-meta on
+set convert-meta off
+
+# ── Key bindings ────────────────────────────────────────────
+# Up/Down arrow search through history matching current prefix
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+
+# Ctrl-Left / Ctrl-Right for word navigation
+"\e[1;5D": backward-word
+"\e[1;5C": forward-word
+# Meta-b / Meta-f (what Ghostty sends for Ctrl-arrows) for word nav
+"\eb": backward-word
+"\ef": forward-word
+
+# Home / End
+"\e[H": beginning-of-line
+"\eOH": beginning-of-line
+"\e[F": end-of-line
+"\eOF": end-of-line
+
+# Delete key
+"\e[3~": delete-char

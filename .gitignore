@@ -1,0 +1,13 @@
+# Backups created by the dotfiles module
+*.devenv-backup.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# macOS
+.DS_Store
+
+# Local scratch
+*.local
