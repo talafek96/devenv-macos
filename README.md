@@ -36,10 +36,12 @@ exec zsh                    # pick up the new shell
 - **`~/.inputrc`** — readline: case-insensitive completion, prefix history search.
 - **`~/.config/zellij/config.kdl`** — locked-mode, mouse copy, Alt keybindings.
 - **`~/.config/ghostty/config`** — Windows-Terminal keybinds, `option-as-alt=left`,
-  Ctrl+V freed for Claude Code image paste, Cmd+arrows → zellij pane focus.
+  Ctrl+V freed for Claude Code image paste, Cmd+arrows → zellij pane focus. Ends
+  with an optional include of `~/.config/ghostty/local.conf` (not tracked) for
+  machine-local, personal-taste settings like `theme = …`.
 - **`~/.config/karabiner/karabiner.json`** — the Windows-feel keymap (globe→Ctrl
   scoped to the built-in keyboard, Windows shortcut translations, ⌥+Shift language
-  switch, and more).
+  switch, the function-key row scheme below, and more).
 
 ### Homebrew formulae (`packages`)
 `gh`, `zellij`, `duti`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`.
@@ -52,13 +54,52 @@ exec zsh                    # pick up the new shell
 `uv` (Python package/project manager, via the Astral installer). Skip with `--skip tools`.
 
 ### macOS keyboard layer (`keybinds`)
-Ghostty App-Support symlink, macOS defaults (globe = Do Nothing, natural scroll,
+Ghostty App-Support dedupe (macOS loads both `~/.config` and the App-Support
+path and merges them, so any duplicate symlink there is removed to avoid
+double-loading the config), macOS defaults (globe = Do Nothing, natural scroll,
 fast key repeat / press-and-hold off), plus a printed checklist of the one-time
 GUI permission grants that can't be scripted (Karabiner / AltTab / Rectangle).
+
+### Function-key row (F1–F12)
+
+Because globe→Ctrl consumes the real Fn key, macOS can no longer generate the
+printed hardware functions on its own. So the row is handled entirely in
+Karabiner:
+
+- **Plain F1–F12** → real function keys (for apps, IDEs, debugging).
+- **Ctrl + F-row** → the printed hardware functions. Since globe **is** Ctrl,
+  hold **Globe *or* the ⌃ Control key** + an F-key. The rule is scoped to the
+  built-in keyboard and *consumes* the Ctrl, so external keyboards keep normal
+  Ctrl+F-keys and the emitted media/brightness event is unmodified.
+
+| Ctrl+ | Action | | Ctrl+ | Action |
+|-------|--------|-|-------|--------|
+| F1 / F2 | Brightness − / + | | F7 / F8 / F9 | Prev / Play-Pause / Next |
+| F3 | Mission Control | | F10 | Mute |
+| F4 | Spotlight (⌘Space) | | F11 / F12 | Volume − / + |
+| F5 | Dictation | | F6 | Do Not Disturb |
+
+Two of these depend on macOS features that have **no reliable keystroke or CLI**:
+
+- **F6 Do Not Disturb** — macOS only toggles Focus via the Shortcuts app.
+  Create a shortcut named exactly **`Toggle Do Not Disturb`** (one action: *Set
+  Focus → Do Not Disturb → Toggle*); Karabiner's Ctrl+F6 runs
+  `shortcuts run "Toggle Do Not Disturb"`. **Works.**
+- **F5 Dictation** — **best-effort / currently unreliable.** Ctrl+F5 emits the
+  `dictation` keycode (safe — harmless if the app receives it), but macOS 26
+  does not reliably start Dictation from a synthesized key even with Dictation
+  enabled. Do **not** map it to a real key-combo (e.g. ⌃⌥⌘-letter): if macOS
+  doesn't capture it, the combo leaks into the focused app. If you need
+  dependable dictation, use a native double-tap trigger (*Settings → Keyboard →
+  Dictation → Shortcut*) pressed directly, not via F5.
 
 ### Private config
 `~/.zshrc_private` is created (not tracked) for API keys, machine-specific
 aliases, conda init, etc. It's sourced at the end of `~/.zshrc`.
+
+`~/.config/ghostty/local.conf` plays the same role for Ghostty: the tracked
+config ends with `config-file = ?~/.config/ghostty/local.conf` (the `?` makes it
+optional), so personal-taste overrides like `theme = …` live outside the repo.
 
 ## Idempotent + self-updating
 

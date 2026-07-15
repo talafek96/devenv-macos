@@ -100,3 +100,8 @@ clipboard-paste-bracketed-safe = true
 quit-after-last-window-closed = true
 # macOS Secure Keyboard Entry on password prompts (sudo).
 macos-auto-secure-input = true
+
+# --- Machine-local / private overrides (NOT tracked in the repo) ---
+# The leading `?` makes this optional: absent file = no error. Loaded last so
+# anything here (e.g. `theme = ...`) wins over the defaults above.
+config-file = ?~/.config/ghostty/local.conf

@@ -1,4 +1,4 @@
-"""macOS keyboard layer: Ghostty App-Support symlink, macOS defaults, and the
+"""macOS keyboard layer: Ghostty App-Support dedupe, macOS defaults, and the
 one-time GUI permission checklist that can't be scripted.
 
 The Karabiner keymap, Ghostty config, and zellij config are deployed by the
@@ -39,38 +39,47 @@ _PERMISSION_CHECKLIST = """\
     - Grant Accessibility on first launch.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
+  Function row (Ctrl+F6) — needs a macOS feature that can't be scripted:
+    - Do Not Disturb (F6): create a Shortcut named exactly "Toggle Do Not
+      Disturb" (one action: Set Focus → Do Not Disturb → Toggle).
+  Function row (Ctrl+F5, Dictation) — best-effort only:
+    - Enable Dictation (System Settings → Keyboard → Dictation). F5 emits the
+      dictation keycode, but macOS may not start Dictation from a synthesized
+      key; treat F5-dictation as unreliable on current macOS.
 """
 
 
 class KeybindsModule(Module):
     name = "keybinds"
-    description = "macOS defaults, Ghostty symlink, and the GUI-permission checklist"
+    description = "macOS defaults, Ghostty App-Support dedupe, and the GUI-permission checklist"
     order = 40
 
     def run(self, ctx) -> None:
-        self._link_ghostty_app_support(ctx)
+        self._dedupe_ghostty_app_support(ctx)
         self._apply_macos_defaults(ctx)
         self._print_checklist(ctx)
 
-    # Ghostty reads ~/.config/ghostty/config, but the App-Support path is the
-    # historical default — symlink it to the canonical file so both agree.
-    def _link_ghostty_app_support(self, ctx) -> None:
+    # Ghostty on macOS loads BOTH ~/.config/ghostty/config AND the App-Support
+    # path, then merges them. Symlinking App-Support to the canonical file (as
+    # an earlier version of this module did) therefore loads the SAME config
+    # twice — harmless for last-wins scalars, but it makes every `config-file`
+    # include fire twice and trips Ghostty's cycle detector. So we ensure the
+    # App-Support path is absent and let ~/.config be the single source.
+    def _dedupe_ghostty_app_support(self, ctx) -> None:
         canonical = ctx.home_dir / ".config/ghostty/config"
         app_support = ctx.home_dir / _GHOSTTY_APP_SUPPORT
-        if not canonical.exists():
-            ctx.warn("~/.config/ghostty/config missing — run the dotfiles module first")
-            return
         try:
+            # Only remove OUR duplicate: a symlink pointing at the canonical
+            # file. A real file there is the user's own config — leave it.
             if app_support.is_symlink() and app_support.resolve() == canonical.resolve():
-                ctx.ok("Ghostty App-Support config already linked")
-                return
-            app_support.parent.mkdir(parents=True, exist_ok=True)
-            if app_support.exists() or app_support.is_symlink():
                 app_support.unlink()
-            app_support.symlink_to(canonical)
-            ctx.ok(f"Linked {app_support} -> {canonical}")
+                ctx.ok("Removed duplicate Ghostty App-Support symlink (was double-loading config)")
+            elif app_support.is_symlink() or app_support.exists():
+                ctx.info(f"Left existing {app_support} in place (not our symlink)")
+            else:
+                ctx.ok("Ghostty App-Support config already deduped")
         except OSError as exc:
-            ctx.warn(f"Could not link Ghostty App-Support config: {exc}")
+            ctx.warn(f"Could not dedupe Ghostty App-Support config: {exc}")
 
     def _apply_macos_defaults(self, ctx) -> None:
         for domain, key, vtype, value in _DEFAULTS:
