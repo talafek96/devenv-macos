@@ -18,4 +18,12 @@ fi
 # back to brew if somehow missing.
 command -v python3 >/dev/null 2>&1 || brew install python
 
+# Put ~/.local/bin on PATH for the whole run so tools installed there during
+# setup (e.g. uv, and the native `claude` CLI) are immediately usable by later
+# steps and their subprocesses.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 exec python3 "$DEVENV_DIR/setup.py" "$@"

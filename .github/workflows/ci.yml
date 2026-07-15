@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Shellcheck + Python lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: shellcheck setup.sh bootstrap.sh
+      - name: Compile Python
+        run: |
+          python3 -m py_compile setup.py
+          find devenv -name '*.py' -exec python3 -m py_compile {} +
+
+  syntax:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check bash syntax
+        run: bash -n setup.sh bootstrap.sh
+      - name: Check Python module discovery
+        run: |
+          python3 -c "import sys; sys.path.insert(0,'.'); from devenv.modules import discover_modules; m=discover_modules(); print(f'{len(m)} modules discovered'); assert len(m) >= 5"
+      - name: Validate karabiner.json
+        run: |
+          python3 -c "import json; json.load(open('dotfiles/config/karabiner/karabiner.json')); print('karabiner.json is valid JSON')"

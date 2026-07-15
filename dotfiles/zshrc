@@ -300,3 +300,5 @@ export VISUAL=vim
 # This file is NOT tracked in the repo. Put API keys, host-specific
 # aliases, conda init, work-specific config, etc. here.
 [[ -f "$HOME/.zshrc_private" ]] && source "$HOME/.zshrc_private"
+
+. "$HOME/.local/bin/env"
