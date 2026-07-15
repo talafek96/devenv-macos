@@ -284,11 +284,6 @@ fi
 # Rust / Cargo
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
-# fnm (Node.js version manager — installed via Homebrew)
-if command -v fnm >/dev/null 2>&1; then
-    eval "$(fnm env --shell zsh)"
-fi
-
 # ── Default editor ──────────────────────────────────────────
 export EDITOR=vim
 export VISUAL=vim

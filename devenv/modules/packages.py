@@ -21,8 +21,6 @@ FORMULAE = [
     "eza",        # modern ls (icons, git status)
     "jq",         # JSON processor
     "tree",       # directory tree view
-    # Node.js version manager (the .zshrc wires up `fnm env`)
-    "fnm",
 ]
 
 

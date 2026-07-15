@@ -42,14 +42,14 @@ exec zsh                    # pick up the new shell
   switch, and more).
 
 ### Homebrew formulae (`packages`)
-`gh`, `zellij`, `duti`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`, `fnm`.
+`gh`, `zellij`, `duti`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`.
 
 ### Homebrew casks (`casks`)
 `ghostty`, `karabiner-elements`, `alt-tab`, `rectangle`, `maccy`, `claude-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`.
 
 ### Dev toolchain (`tools`)
-`uv` (Python), Rust (rustup), Node.js LTS (fnm). Skip with `--skip tools`.
+`uv` (Python package/project manager, via the Astral installer). Skip with `--skip tools`.
 
 ### macOS keyboard layer (`keybinds`)
 Ghostty App-Support symlink, macOS defaults (globe = Do Nothing, natural scroll,
@@ -99,7 +99,7 @@ devenv-macos/
 │       ├── __init__.py          # Module base + auto-discovery
 │       ├── packages.py          # brew formulae            (order 10)
 │       ├── casks.py             # brew casks / GUI apps     (order 15)
-│       ├── tools.py             # uv / rust / node          (order 20)
+│       ├── tools.py             # uv (Python)               (order 20)
 │       ├── dotfiles.py          # symlinks + gitconfig      (order 30)
 │       └── keybinds.py          # macOS defaults + perms    (order 40)
 ├── dotfiles/
