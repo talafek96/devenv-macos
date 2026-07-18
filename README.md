@@ -57,7 +57,7 @@ exec zsh                    # pick up the new shell
 ### macOS keyboard layer (`keybinds`)
 Ghostty App-Support dedupe (macOS loads both `~/.config` and the App-Support
 path and merges them, so any duplicate symlink there is removed to avoid
-double-loading the config), macOS defaults (globe = Do Nothing, natural scroll,
+double-loading the config), macOS defaults (globe tap = Change Input Source, natural scroll,
 fast key repeat / press-and-hold off), plus a printed checklist of the one-time
 GUI permission grants that can't be scripted (Karabiner / AltTab / Rectangle).
 

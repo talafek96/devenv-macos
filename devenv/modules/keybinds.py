@@ -15,9 +15,10 @@ from devenv.modules import Module
 # logout/login (noted to the user at the end).
 _DEFAULTS = [
     # Globe/fn is a NATIVE fn key (used as a modifier: fn+F-row, fn+arrows).
-    # This only governs a lone globe TAP — 0 = Do Nothing (avoids a surprise
-    # emoji/input-source popover); fn-as-modifier is unaffected by this value.
-    ("com.apple.HIToolbox", "AppleFnUsageType", "-int", "0"),
+    # This only governs a lone globe TAP — 1 = Change Input Source (tap globe to
+    # cycle keyboard languages); fn-as-modifier is unaffected. Read at login, so
+    # it takes effect after the next logout/login.
+    ("com.apple.HIToolbox", "AppleFnUsageType", "-int", "1"),
     # Natural scrolling ON (the known-good baseline for the keymap).
     ("NSGlobalDomain", "com.apple.swipescrolldirection", "-bool", "true"),
     # Key repeat instead of the accent-picker popover (essential for vim/coding).
@@ -83,7 +84,7 @@ class KeybindsModule(Module):
     def _apply_macos_defaults(self, ctx) -> None:
         for domain, key, vtype, value in _DEFAULTS:
             ctx.run("defaults", "write", domain, key, vtype, value, check=False)
-        ctx.ok("Applied macOS defaults (globe=Do Nothing, natural scroll, key repeat)")
+        ctx.ok("Applied macOS defaults (globe tap=Change Input Source, natural scroll, key repeat)")
         ctx.info("Some of these take effect after the next logout/login.")
 
     def _print_checklist(self, ctx) -> None:
