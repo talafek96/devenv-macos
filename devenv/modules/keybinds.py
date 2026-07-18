@@ -14,7 +14,9 @@ from devenv.modules import Module
 # Each is a per-user `defaults write`. Several only take full effect after a
 # logout/login (noted to the user at the end).
 _DEFAULTS = [
-    # Globe/fn key does nothing at the macOS level, so Karabiner owns globe->Ctrl.
+    # Globe/fn is a NATIVE fn key (used as a modifier: fn+F-row, fn+arrows).
+    # This only governs a lone globe TAP — 0 = Do Nothing (avoids a surprise
+    # emoji/input-source popover); fn-as-modifier is unaffected by this value.
     ("com.apple.HIToolbox", "AppleFnUsageType", "-int", "0"),
     # Natural scrolling ON (the known-good baseline for the keymap).
     ("NSGlobalDomain", "com.apple.swipescrolldirection", "-bool", "true"),
@@ -39,13 +41,10 @@ _PERMISSION_CHECKLIST = """\
     - Grant Accessibility on first launch.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
-  Function row (Ctrl+F6) — needs a macOS feature that can't be scripted:
-    - Do Not Disturb (F6): create a Shortcut named exactly "Toggle Do Not
-      Disturb" (one action: Set Focus → Do Not Disturb → Toggle).
-  Function row (Ctrl+F5, Dictation) — best-effort only:
-    - Enable Dictation (System Settings → Keyboard → Dictation). F5 emits the
-      dictation keycode, but macOS may not start Dictation from a synthesized
-      key; treat F5-dictation as unreliable on current macOS.
+  Function row: globe/fn is native, so the printed hardware functions work via
+  fn+F1..F12 out of the box (brightness, Mission Control, media, volume, Do Not
+  Disturb on F6, etc.). For fn+F5 Dictation, enable it once under System
+  Settings → Keyboard → Dictation.
 """
 
 

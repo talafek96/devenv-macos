@@ -39,9 +39,10 @@ exec zsh                    # pick up the new shell
   Ctrl+V freed for Claude Code image paste, Cmd+arrows → zellij pane focus. Ends
   with an optional include of `~/.config/ghostty/local.conf` (not tracked) for
   machine-local, personal-taste settings like `theme = …`.
-- **`~/.config/karabiner/karabiner.json`** — the Windows-feel keymap (globe→Ctrl
-  scoped to the built-in keyboard, Windows shortcut translations, ⌥+Shift language
-  switch, the function-key row scheme below, and more).
+- **`~/.config/karabiner/karabiner.json`** — the Windows-feel keymap (Windows
+  shortcut translations on the Control key, ⌥+Shift language switch, the
+  function-key row scheme below, and more). The globe/fn key is left **native**
+  (see below).
 
 ### Homebrew formulae (`packages`)
 `gh`, `zellij`, `duti`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`.
@@ -60,38 +61,20 @@ double-loading the config), macOS defaults (globe = Do Nothing, natural scroll,
 fast key repeat / press-and-hold off), plus a printed checklist of the one-time
 GUI permission grants that can't be scripted (Karabiner / AltTab / Rectangle).
 
-### Function-key row (F1–F12)
+### Function-key row (F1–F12) & the globe/fn key
 
-Because globe→Ctrl consumes the real Fn key, macOS can no longer generate the
-printed hardware functions on its own. So the row is handled entirely in
-Karabiner:
+The globe/fn key is **native** — it is your real Fn key, so macOS generates the
+printed hardware functions itself. `fn_function_keys` maps F1→F1 … F12→F12, so:
 
 - **Plain F1–F12** → real function keys (for apps, IDEs, debugging).
-- **Ctrl + F-row** → the printed hardware functions. Since globe **is** Ctrl,
-  hold **Globe *or* the ⌃ Control key** + an F-key. The rule is scoped to the
-  built-in keyboard and *consumes* the Ctrl, so external keyboards keep normal
-  Ctrl+F-keys and the emitted media/brightness event is unmodified.
+- **fn + F1–F12** → the printed hardware functions (brightness, Mission Control,
+  Spotlight, media, volume, etc.) — the standard macOS behavior.
+- **fn** also restores native chords: `fn+←/→` = Home/End, `fn+↑/↓` =
+  PageUp/PageDown, `fn+Delete` = forward-delete.
 
-| Ctrl+ | Action | | Ctrl+ | Action |
-|-------|--------|-|-------|--------|
-| F1 / F2 | Brightness − / + | | F7 / F8 / F9 | Prev / Play-Pause / Next |
-| F3 | Mission Control | | F10 | Mute |
-| F4 | Spotlight (⌘Space) | | F11 / F12 | Volume − / + |
-| F5 | Dictation | | F6 | Do Not Disturb |
-
-Two of these depend on macOS features that have **no reliable keystroke or CLI**:
-
-- **F6 Do Not Disturb** — macOS only toggles Focus via the Shortcuts app.
-  Create a shortcut named exactly **`Toggle Do Not Disturb`** (one action: *Set
-  Focus → Do Not Disturb → Toggle*); Karabiner's Ctrl+F6 runs
-  `shortcuts run "Toggle Do Not Disturb"`. **Works.**
-- **F5 Dictation** — **best-effort / currently unreliable.** Ctrl+F5 emits the
-  `dictation` keycode (safe — harmless if the app receives it), but macOS 26
-  does not reliably start Dictation from a synthesized key even with Dictation
-  enabled. Do **not** map it to a real key-combo (e.g. ⌃⌥⌘-letter): if macOS
-  doesn't capture it, the combo leaks into the focused app. If you need
-  dependable dictation, use a native double-tap trigger (*Settings → Keyboard →
-  Dictation → Shortcut*) pressed directly, not via F5.
+> Ctrl is the **physical Control key** (native), which drives all the
+> Windows-style `Ctrl+…` translations. The bottom-left **corner** key is fn, as
+> on a stock MacBook — it is *not* remapped to Control.
 
 ### Private config
 `~/.zshrc_private` is created (not tracked) for API keys, machine-specific
