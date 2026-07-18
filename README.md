@@ -63,14 +63,21 @@ GUI permission grants that can't be scripted (Karabiner / AltTab / Rectangle).
 
 ### Function-key row (F1–F12) & the globe/fn key
 
-The globe/fn key is **native** — it is your real Fn key, so macOS generates the
-printed hardware functions itself. `fn_function_keys` maps F1→F1 … F12→F12, so:
+The globe/fn key keeps its **full native dual role** — Karabiner does **not**
+touch the F-row (`fn_function_keys` is `[]`), so macOS owns it entirely, exactly
+like a stock Mac:
 
-- **Plain F1–F12** → real function keys (for apps, IDEs, debugging).
-- **fn + F1–F12** → the printed hardware functions (brightness, Mission Control,
-  Spotlight, media, volume, etc.) — the standard macOS behavior.
-- **fn** also restores native chords: `fn+←/→` = Home/End, `fn+↑/↓` =
+- **Tap globe** → cycle keyboard input sources (`AppleFnUsageType = 1`).
+- **Hold globe (= fn) + F1–F12** → the printed hardware functions (brightness,
+  Mission Control, Spotlight, media, volume, etc.).
+- **Plain F1–F12** → real function keys (for apps, IDEs, debugging), because
+  `com.apple.keyboard.fnState = true` ("use F1–F12 as standard function keys").
+- **fn** also gives the native chords: `fn+←/→` = Home/End, `fn+↑/↓` =
   PageUp/PageDown, `fn+Delete` = forward-delete.
+
+> The critical bit: **don't let Karabiner remap the F-row.** Any `fn_function_keys`
+> override stops macOS's native `fn`→hardware inversion from applying, which
+> silently breaks `globe+F1..F12`. Leave it `[]` and let `fnState` do the work.
 
 > Ctrl is the **physical Control key** (native), which drives all the
 > Windows-style `Ctrl+…` translations. The bottom-left **corner** key is fn, as
