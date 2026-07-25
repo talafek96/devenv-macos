@@ -13,13 +13,15 @@ from datetime import datetime
 from devenv.modules import Module
 
 # ── Dotfile map ─────────────────────────────────────────────
-# Key:   path under dotfiles/   Value: target path in $HOME (with leading dot)
+# Key:   path under dotfiles/   Value: target path in $HOME (usually with leading dot)
 DOTFILES: dict[str, str] = {
     "zshrc": ".zshrc",
     "inputrc": ".inputrc",
     "config/zellij/config.kdl": ".config/zellij/config.kdl",
     "config/ghostty/config": ".config/ghostty/config",
     "config/karabiner/karabiner.json": ".config/karabiner/karabiner.json",
+    # VS Code user settings (not a dotfile — macOS App Support path).
+    "vscode/settings.json": "Library/Application Support/Code/User/settings.json",
 }
 
 # ── Private config template ─────────────────────────────────

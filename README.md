@@ -43,13 +43,15 @@ exec zsh                    # pick up the new shell
   shortcut translations on the Control key, ⌥+Shift language switch, the
   function-key row scheme below, and more). The globe/fn key is left **native**
   (see below).
+- **`~/Library/Application Support/Code/User/settings.json`** — VS Code user
+  settings (format-on-save, 100-col ruler, zsh terminal, telemetry off, …).
 
 ### Homebrew formulae (`packages`)
 `gh`, `zellij`, `duti`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`.
 
 ### Homebrew casks (`casks`)
 `ghostty`, `karabiner-elements`, `alt-tab`, `rectangle`, `maccy`, `claude-code`,
-`google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`.
+`visual-studio-code`, `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`.
 
 ### Dev toolchain (`tools`)
 `uv` (Python package/project manager, via the Astral installer). Skip with `--skip tools`.
