@@ -1,0 +1,36 @@
+{
+  // Managed by devenv-macos → symlinked to
+  // ~/Library/Application Support/Code/User/settings.json
+  // Edit here (in the repo) and commit; changes apply on every machine.
+
+  // ── Editor ──────────────────────────────────────────────
+  "editor.fontSize": 13,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.rulers": [100],
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.formatOnSave": true,
+  "editor.minimap.enabled": false,
+
+  // ── Files ───────────────────────────────────────────────
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // ── Terminal (matches the zsh setup from devenv-macos) ──
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.fontSize": 13,
+
+  // ── Workbench ───────────────────────────────────────────
+  "workbench.editor.enablePreview": false,
+  "explorer.confirmDragAndDrop": false,
+
+  // ── Git ─────────────────────────────────────────────────
+  "git.confirmSync": false,
+  "git.autofetch": true,
+
+  // ── Privacy ─────────────────────────────────────────────
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "manual"
+}
