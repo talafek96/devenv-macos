@@ -1,4 +1,13 @@
 {
+    // Managed by devenv-macos → symlinked to
+    // ~/Library/Application Support/Code/User/settings.json
+    //
+    // This is a SANITIZED, public-safe baseline. Machine/work-specific settings
+    // (internal hosts, SSH targets, enterprise URLs, project paths) are kept
+    // LOCAL only and are intentionally not committed here. On this machine the
+    // live file carries the full set; git ignores those local changes via
+    // `git update-index --skip-worktree dotfiles/vscode/settings.json`.
+
     "remote.SSH.defaultExtensions": [],
 
     // Hints
@@ -10,26 +19,6 @@
     "python.analysis.inlayHints.callArgumentNames": "all",
 
     // GitLens
-    "gitlens.autolinks": [
-        {
-            "prefix": "SCI-",
-            "url": "https://jira.cec.lab.emc.com/browse/SCI-<num>"
-        },
-        {
-            "prefix": "PF02G-",
-            "url": "https://jira.cec.lab.emc.com/browse/PF02G-<num>"
-        },
-        // {
-        //     "prefix": "#",
-        //     "alphanumeric": false,
-        //     "url": "https://eos2git.cec.lab.emc.com/vxflexos/ScaleIO/pull/<num>/"
-        // }
-        {
-            "prefix": "#",
-            "alphanumeric": false,
-            "url": "https://eos2git.cec.lab.emc.com/vxflexos/agentic_root_cause_analyzer/pull/<num>/"
-        }
-    ],
     "gitlens.hovers.currentLine.over": "line",
 
     // TODO Tree config:
@@ -65,38 +54,21 @@
     // IDE Config:
     "files.autoSave": "afterDelay",
     "editor.guides.bracketPairs": true,
-    "remote.SSH.remotePlatform": {
-        "vm_remote": "linux",
-        "vm-sio-tal_afek.sio.lab.emc.com": "linux",
-        "10.55.136.104": "linux",
-        "vm-sio-adan_suleiman.sio.lab.emc.com": "linux",
-        "vm-sio-barsha.sio.lab.emc.com": "linux",
-        "vscode_bug": "linux",
-        "calc1-104003": "linux"
-    },
     "extensions.ignoreRecommendations": true,
     "scm.workingSets.enabled": true,
-    "workbench.editor.customLabels.patterns": {
-        "**/src/mdm/**": "${filename}.${extname} (MDM)",
-        "**/src/gtest/mdm/**": "${filename}.${extname} (mdm_unittest)"
-    },
     "workbench.editorLargeFileConfirmation": 1024,
     "editor.largeFileOptimizations": false,
-    "github-enterprise.uri": "https://eos2git.cec.lab.emc.com",
     "notebook.lineNumbers": "on",
     "terminal.integrated.enableMultiLinePasteWarning": "never",
-    "python.autoComplete.extraPaths": [
-        "/home/sio/ScaleIO_Spark2/spark2"
-    ],
-    "python.analysis.extraPaths": [
-        "/home/sio/ScaleIO_Spark2/spark2"
-    ],
     "[python]": {
         "editor.formatOnType": true,
         "editor.defaultFormatter": "ms-python.autopep8",
     },
     "[cpp]": {
         "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "[c]": {
+        "editor.defaultFormatter": "xaver.clang-format"
     },
 
     // GitHub PR:
@@ -126,6 +98,7 @@
             "query": "default"
         }
     ],
+    "githubPullRequests.pullBranch": "never",
 
     // Enable longer repositories:
     "editor.foldingMaximumRegions": 65000,
@@ -147,10 +120,6 @@
     "terminal.integrated.shellIntegration.decorationsEnabled": "never",
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
 
-    "codeiumEnterprise.portalUrl": "https://codeium.delllabs.net",
-    "codeium.apiServerUrl": "https://codeium.delllabs.net/_route/api_server",
-    "codeiumEnterprise.extensionBaseUrl": "https://codeium.delllabs.net",
-    "githubPullRequests.pullBranch": "never",
     "explorer.fileNesting.patterns": {
         "*.ts": "${capture}.js",
         "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
@@ -235,9 +204,6 @@
         "Unhijack",
         "uvicorn"
     ],
-    "[c]": {
-        "editor.defaultFormatter": "xaver.clang-format"
-    },
     "codeium.enableConfig": {
         "*": false
     },
@@ -259,9 +225,6 @@
         "tsc"
     ],
     "roo-cline.deniedCommands": [],
-    "security.allowedUNCHosts": [
-        "W-7GNQGC4"
-    ],
     // ── Zellij terminal passthrough ────────────────────────────
     // Only applies when the integrated terminal is focused.
     // All IDE shortcuts work normally when the editor is focused.
