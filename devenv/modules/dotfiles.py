@@ -17,11 +17,20 @@ from devenv.modules import Module
 DOTFILES: dict[str, str] = {
     "zshrc": ".zshrc",
     "inputrc": ".inputrc",
+    # Shared, repo-managed shell aliases (sourced by ~/.zshrc before the
+    # personal, untracked ~/.zsh_aliases).
+    "zsh_aliases": ".zsh_aliases_shared",
     "config/zellij/config.kdl": ".config/zellij/config.kdl",
     "config/ghostty/config": ".config/ghostty/config",
     "config/karabiner/karabiner.json": ".config/karabiner/karabiner.json",
     # VS Code user settings (not a dotfile — macOS App Support path).
     "vscode/settings.json": "Library/Application Support/Code/User/settings.json",
+}
+
+# Symlinks that are only created when their feature is opted in. Keyed by the
+# DOTFILES source path → a predicate over the Context.
+_OPTIN_DOTFILES = {
+    "config/karabiner/karabiner.json": lambda ctx: ctx.karabiner_enabled,
 }
 
 # ── Private config template ─────────────────────────────────
@@ -50,6 +59,17 @@ _ZSHRC_PRIVATE_TEMPLATE = """\
 # if command -v zellij >/dev/null 2>&1 && [[ -z "$ZELLIJ" ]]; then
 #     zellij attach main -c
 # fi
+"""
+
+# ── Personal aliases template ───────────────────────────────
+_ZSH_ALIASES_TEMPLATE = """\
+# ~/.zsh_aliases — PERSONAL, machine-local aliases. NOT tracked in devenv-macos.
+# Sourced by ~/.zshrc AFTER the shared ~/.zsh_aliases_shared, so anything here
+# overrides the repo's shared aliases. Put personal / work / host-specific
+# aliases here.
+
+# alias k='kubectl'
+# alias gp='git push'
 """
 
 # ── Git config settings (applied via `git config --global`) ─
@@ -86,11 +106,18 @@ class DotfilesModule(Module):
         self._link_dotfiles(ctx)
         self._apply_gitconfig(ctx)
         self._create_private_config(ctx)
+        self._create_personal_aliases(ctx)
 
     # ── symlinks ────────────────────────────────────────────
 
     def _link_dotfiles(self, ctx) -> None:
         for src_name, dst_rel in DOTFILES.items():
+            predicate = _OPTIN_DOTFILES.get(src_name)
+            if predicate is not None and not predicate(ctx):
+                ctx.info(f"Skipping {dst_rel} (opt-in — set DEVENV_KARABINER=1 "
+                         "to enable the Karabiner keymap)")
+                continue
+
             src = ctx.dotfiles_dir / src_name
             dst = ctx.home_dir / dst_rel
 
@@ -165,3 +192,14 @@ class DotfilesModule(Module):
             return
         path.write_text(_ZSHRC_PRIVATE_TEMPLATE)
         ctx.ok(f"Created {path} (edit with your private config)")
+
+    # ── personal aliases ────────────────────────────────────
+    # Untracked, machine-local alias file. Sourced by ~/.zshrc AFTER the shared
+    # ~/.zsh_aliases_shared, so anything here overrides the repo's aliases.
+    def _create_personal_aliases(self, ctx) -> None:
+        path = ctx.home_dir / ".zsh_aliases"
+        if path.exists():
+            ctx.ok(f"{path} already exists — skipping")
+            return
+        path.write_text(_ZSH_ALIASES_TEMPLATE)
+        ctx.ok(f"Created {path} (your personal, untracked aliases)")

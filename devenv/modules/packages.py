@@ -13,6 +13,7 @@ FORMULAE = [
     "gh",         # GitHub CLI
     "zellij",     # terminal multiplexer
     "duti",       # set default apps for file types / URL schemes
+    "mas",        # Mac App Store CLI (installs App Store-only apps, e.g. Pixea)
     # QoL CLI tools (added by devenv-macos)
     "fzf",        # fuzzy finder — powers Ctrl-R / Ctrl-T / Alt-C in .zshrc
     "ripgrep",    # fast recursive grep (rg)

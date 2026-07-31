@@ -256,9 +256,17 @@ bindkey '^[[1~' beginning-of-line
 bindkey '^[[4~' end-of-line
 # Delete
 bindkey '^[[3~' delete-char
-# Ctrl-Left/Right for word navigation (Ghostty sends ESC-b / ESC-f; also handle CSI)
-bindkey '^[[1;5D' backward-word
-bindkey '^[[1;5C' forward-word
+# Word navigation with Ctrl+arrow AND Option/Alt+arrow.
+#   Ghostty sends Ctrl+arrow as CSI 1;5 (see ghostty/config) and Option+arrow
+#   as CSI 1;3. Bind both so word-jump works at the prompt on either modifier,
+#   and Option+arrow stops leaking a bare "C"/"D" (an unbound CSI). ESC-b / -f
+#   are kept as a harmless fallback for terminals that still send Meta-b/f.
+bindkey '^[[1;5D' backward-word   # Ctrl+Left
+bindkey '^[[1;5C' forward-word    # Ctrl+Right
+bindkey '^[[1;3D' backward-word   # Option/Alt+Left  (also Karabiner's Ctrl→Option remap)
+bindkey '^[[1;3C' forward-word    # Option/Alt+Right
+bindkey '^[[1;4D' backward-word   # +Shift variant (no selection in a shell)
+bindkey '^[[1;4C' forward-word
 bindkey '^[b' backward-word
 bindkey '^[f' forward-word
 
@@ -269,7 +277,12 @@ if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi
 
-# ── zsh aliases file ────────────────────────────────────────
+# ── Shared + personal aliases ───────────────────────────────
+# Shared, repo-managed aliases (symlinked from dotfiles/zsh_aliases →
+# ~/.zsh_aliases_shared). Personal, machine-local aliases live in
+# ~/.zsh_aliases (NOT tracked) and are sourced last so they override the shared
+# ones.
+[[ -f ~/.zsh_aliases_shared ]] && source ~/.zsh_aliases_shared
 [[ -f ~/.zsh_aliases ]] && source ~/.zsh_aliases
 
 # ── Tool-managed PATH sections ──────────────────────────────

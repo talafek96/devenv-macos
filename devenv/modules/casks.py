@@ -15,7 +15,6 @@ from devenv.modules import Module
 CASKS = [
     # Core Windows-feel / terminal setup
     "ghostty",              # GPU terminal
-    "karabiner-elements",   # keyboard remapper (installer prompts for your password)
     "alt-tab",              # Windows-style Alt-Tab switcher
     "rectangle",            # window snapping
     "maccy",                # clipboard history manager
@@ -30,6 +29,10 @@ CASKS = [
     "macdroid",             # Android <-> Mac file transfer
 ]
 
+# Opt-in only (DEVENV_KARABINER=1): the keyboard remapper behind the
+# Windows-feel keymap. Its installer prompts for your password.
+_KARABINER_CASK = "karabiner-elements"
+
 
 class CasksModule(Module):
     name = "casks"
@@ -37,15 +40,23 @@ class CasksModule(Module):
     order = 15
 
     def run(self, ctx) -> None:
-        ctx.info(f"Installing {len(CASKS)} casks (skips any already present)...")
-        ctx.info("(karabiner-elements will prompt for your password during install.)")
-        ctx.run("brew", "install", "--cask", *CASKS, check=False)
+        casks = list(CASKS)
+        if ctx.karabiner_enabled:
+            casks.append(_KARABINER_CASK)
+            ctx.info("Karabiner keymap enabled (DEVENV_KARABINER) — including "
+                     "karabiner-elements; it prompts for your password.")
+        else:
+            ctx.info("Karabiner keymap disabled — skipping karabiner-elements "
+                     "(set DEVENV_KARABINER=1 to include it).")
+
+        ctx.info(f"Installing {len(casks)} casks (skips any already present)...")
+        ctx.run("brew", "install", "--cask", *casks, check=False)
 
         ctx.info("Upgrading any outdated casks (self-updating apps are left alone)...")
-        ctx.run("brew", "upgrade", "--cask", *CASKS, check=False)
+        ctx.run("brew", "upgrade", "--cask", *casks, check=False)
 
         installed = set(ctx.command_output("brew", "list", "--cask").split())
-        missing = [c for c in CASKS if c not in installed]
+        missing = [c for c in casks if c not in installed]
         if missing:
             ctx.warn(f"Not installed (check names/availability): {', '.join(missing)}")
-        ctx.ok(f"{len(CASKS) - len(missing)}/{len(CASKS)} casks present")
+        ctx.ok(f"{len(casks) - len(missing)}/{len(casks)} casks present")

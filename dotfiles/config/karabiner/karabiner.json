@@ -408,10 +408,7 @@
                                     {
                                         "bundle_identifiers": [
                                             "^com\\.p5sys\\.jump\\.mac\\.viewer$",
-                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
-                                            "^com\\.mitchellh\\.ghostty$",
-                                            "^com\\.apple\\.Terminal$",
-                                            "^com\\.googlecode\\.iterm2$"
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$"
                                         ],
                                         "type": "frontmost_application_unless"
                                     }
@@ -441,10 +438,7 @@
                                     {
                                         "bundle_identifiers": [
                                             "^com\\.p5sys\\.jump\\.mac\\.viewer$",
-                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
-                                            "^com\\.mitchellh\\.ghostty$",
-                                            "^com\\.apple\\.Terminal$",
-                                            "^com\\.googlecode\\.iterm2$"
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$"
                                         ],
                                         "type": "frontmost_application_unless"
                                     }

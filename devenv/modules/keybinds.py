@@ -32,13 +32,26 @@ _DEFAULTS = [
     ("NSGlobalDomain", "InitialKeyRepeat", "-int", "15"),
 ]
 
+# ── macOS symbolic hotkeys to DISABLE ───────────────────────
+# macOS reserves Ctrl+←/→ for Mission Control "Move left/right a space" and
+# swallows those chords system-wide BEFORE any app (terminal included) sees
+# them — so Ctrl+Left/Right word-jump in Ghostty/zsh produced *nothing*. We turn
+# those four off for the Windows-feel setup (Windows doesn't switch desktops on
+# Ctrl+arrow anyway; use a trackpad swipe / Mission Control for spaces).
+#   79 = Move left a space (Ctrl+←)        81 = Move right a space (Ctrl+→)
+#   80 = + shift (move window left)         82 = + shift (move window right)
+_DISABLE_SYMBOLIC_HOTKEYS = [79, 80, 81, 82]
+
 _GHOSTTY_APP_SUPPORT = "Library/Application Support/com.mitchellh.ghostty/config"
 
-_PERMISSION_CHECKLIST = """\
+_KARABINER_CHECKLIST = """\
   Karabiner-Elements (the keymap won't work until all three are done):
     1. Open Karabiner-Elements → approve the driver / system-extension prompt.
     2. System Settings → Privacy & Security → Input Monitoring   → enable Karabiner.
     3. System Settings → Privacy & Security → Accessibility        → enable Karabiner.
+"""
+
+_PERMISSION_CHECKLIST = """\
   AltTab:
     - Grant Accessibility on first launch.
     - Controls → set the Hold shortcut to Command (so your Alt = Command opens it).
@@ -61,6 +74,7 @@ class KeybindsModule(Module):
     def run(self, ctx) -> None:
         self._dedupe_ghostty_app_support(ctx)
         self._apply_macos_defaults(ctx)
+        self._disable_space_switch_hotkeys(ctx)
         self._print_checklist(ctx)
 
     # Ghostty on macOS loads BOTH ~/.config/ghostty/config AND the App-Support
@@ -91,6 +105,22 @@ class KeybindsModule(Module):
         ctx.ok("Applied macOS defaults (globe tap=Change Input Source, fn+F-row=hardware, natural scroll, key repeat)")
         ctx.info("Some of these take effect after the next logout/login.")
 
+    # Free Ctrl+←/→ from Mission Control so they reach the terminal (word-jump).
+    def _disable_space_switch_hotkeys(self, ctx) -> None:
+        for hk in _DISABLE_SYMBOLIC_HOTKEYS:
+            # -dict-add replaces the whole entry for this id; the stock entries
+            # carry no key-binding params, so {enabled=0;} is enough to disable.
+            ctx.run("defaults", "write", "com.apple.symbolichotkeys",
+                    "AppleSymbolicHotKeys", "-dict-add", str(hk), "{enabled=0;}",
+                    check=False)
+        # Apply without a full logout (Ctrl+arrow may still need a re-login on
+        # some macOS builds to fully release from the WindowManager).
+        ctx.run("/System/Library/PrivateFrameworks/SystemAdministration.framework"
+                "/Resources/activateSettings", "-u", check=False)
+        ctx.ok("Disabled macOS Ctrl+←/→ space-switching (frees Ctrl+arrow for word-jump)")
+
     def _print_checklist(self, ctx) -> None:
         ctx.header("Manual, one-time GUI permissions (cannot be scripted)")
+        if ctx.karabiner_enabled:
+            print(_KARABINER_CHECKLIST)
         print(_PERMISSION_CHECKLIST)

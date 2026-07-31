@@ -23,10 +23,20 @@ keybind = ctrl+v=unbind
 # --- Newline for Claude Code (ESC+CR; WT itself sends \n) ---
 keybind = shift+enter=text:\x1b\r
 
-# --- Word navigation (Ctrl + arrows). Atomic ESC-b / ESC-f in ONE PTY
-#     write so Claude Code's TUI parses it as Meta-b/f. ---
-keybind = ctrl+left=text:\x1bb
-keybind = ctrl+right=text:\x1bf
+# --- Word navigation (Ctrl + arrows). Send the STANDARD xterm Ctrl+arrow CSI
+#     (ESC [ 1;5 D/C), NOT the Meta form (ESC-b / ESC-f): ESC-f = Alt-f, which
+#     zellij binds (ToggleFloatingPanes) and swallows. The 1;5 CSI is outside
+#     the Alt namespace, passes zellij's locked mode, and zsh binds it.
+#
+#     IMPORTANT context — macOS eats Ctrl+←/→ for Mission Control "move a
+#     space" *before any app sees it*, so this binding only fires once that
+#     shortcut is disabled (the `keybinds` module does this; needs a logout).
+#     With the Karabiner keymap on, Karabiner instead rewrites Ctrl+arrow →
+#     Option+arrow at the HID level (before Mission Control), so the terminal
+#     receives ESC [ 1;3 D/C — also bound to word motion in ~/.zshrc. Either
+#     path lands on backward/forward-word. ---
+keybind = ctrl+left=text:\x1b[1;5D
+keybind = ctrl+right=text:\x1b[1;5C
 
 # --- Word deletion (Windows-style). Ctrl+Backspace = ESC+DEL (zsh
 #     backward-kill-word), Ctrl+Delete = ESC+d (kill-word forward). ---

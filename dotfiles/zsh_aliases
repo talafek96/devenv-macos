@@ -1,0 +1,11 @@
+# ~/.zsh_aliases_shared — SHARED aliases, managed by devenv-macos
+# (symlinked from this repo's dotfiles/zsh_aliases). Sourced by ~/.zshrc BEFORE
+# your personal ~/.zsh_aliases, so anything you put there overrides these.
+#
+# Keep this file portable: no machine-specific paths, hosts, or secrets — those
+# belong in ~/.zsh_aliases (not tracked).
+
+# Claude Code: run the CLI in bypass-permissions mode so it doesn't stop to ask
+# for approval on every edit / command. The native `claude` CLI lives in
+# ~/.local/bin (put on PATH by ~/.zshrc).
+alias claude='claude --dangerously-skip-permissions'

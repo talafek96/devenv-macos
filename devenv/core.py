@@ -21,6 +21,12 @@ class _Colors:
 
 C = _Colors
 
+# ── Opt-in feature flags (environment variables) ────────────
+# The Karabiner keymap (cask + karabiner.json + its permission checklist) is
+# NOT installed unless this is set to a truthy value (1/true/yes/on) before
+# running setup, e.g.  DEVENV_KARABINER=1 ./setup.sh
+KARABINER_ENV = "DEVENV_KARABINER"
+
 
 class Context:
     """Shared state and helpers passed to every module."""
@@ -30,6 +36,20 @@ class Context:
         self.home_dir = home_dir or Path.home()
         self.dotfiles_dir = devenv_dir / "dotfiles"
         self._brew_prefix: str | None = None
+
+    # ── opt-in feature flags ────────────────────────────────
+
+    def env_flag(self, name: str, default: bool = False) -> bool:
+        """True if environment variable `name` is set to a truthy value."""
+        val = os.environ.get(name)
+        if val is None:
+            return default
+        return val.strip().lower() in ("1", "true", "yes", "on")
+
+    @property
+    def karabiner_enabled(self) -> bool:
+        """Whether the Karabiner keymap is opted in (DEVENV_KARABINER)."""
+        return self.env_flag(KARABINER_ENV)
 
     # ── Homebrew ────────────────────────────────────────────
 
