@@ -69,13 +69,26 @@ _CLEANSHOT_APP = Path("/Applications/CleanShot X.app")
 _SCREENSHOT_HOTKEY_ID = 31
 _SCREENSHOT_HOTKEY_VALUE = "{enabled=1;value={parameters=(115,1,655360);type=standard;};}"
 
-# All macOS "Screenshots" symbolic-hotkey ids (System Settings → Keyboard →
-# Keyboard Shortcuts → Screenshots). CleanShot X pops a dialog on first launch
-# asking you to turn these OFF so they don't collide with its capture shortcuts;
-# we automate that when CleanShot is in play.
+# macOS "Screenshots" symbolic hotkeys (System Settings → Keyboard → Keyboard
+# Shortcuts → Screenshots). CleanShot X pops a dialog on first launch asking you
+# to turn these OFF so they don't collide with its capture shortcuts; we automate
+# that when CleanShot is in play.
+#
+# IMPORTANT: disable by writing the FULL entry with enabled=0 AND keeping the
+# default `value` (parameters). A bare `{enabled=0;}` (no value dict) is treated
+# as malformed — System Settings silently deletes it and the shortcut reverts to
+# its enabled default. Modifier mask bits: Shift=131072, Control=262144,
+# Command=1048576 → Cmd+Shift=1179648, Ctrl+Cmd+Shift=1441792. Key params are
+# (asciiOfDigit, kVK_ANSI_digit, mask): 3=(51,20) 4=(52,21) 5=(53,23).
 #   28 save screen→file    29 copy screen→clipboard
 #   30 save area→file      31 copy area→clipboard      184 screenshot toolbar
-_SCREENSHOT_HOTKEY_IDS = [28, 29, 30, 31, 184]
+_SCREENSHOT_HOTKEYS_DISABLED = {
+    28: "{enabled=0;value={parameters=(51,20,1179648);type=standard;};}",
+    29: "{enabled=0;value={parameters=(51,20,1441792);type=standard;};}",
+    30: "{enabled=0;value={parameters=(52,21,1179648);type=standard;};}",
+    31: "{enabled=0;value={parameters=(52,21,1441792);type=standard;};}",
+    184: "{enabled=0;value={parameters=(53,23,1179648);type=standard;};}",
+}
 
 _GHOSTTY_APP_SUPPORT = "Library/Application Support/com.mitchellh.ghostty/config"
 
@@ -189,10 +202,10 @@ class KeybindsModule(Module):
         # CleanShot's own capture hotkey is still set inside the app: the
         # checklist walks through license activation + the Option+Shift+S binding.
         if ctx.cleanshot_enabled or _CLEANSHOT_APP.exists():
-            for hk in _SCREENSHOT_HOTKEY_IDS:
+            for hk, entry in _SCREENSHOT_HOTKEYS_DISABLED.items():
                 ctx.run("defaults", "write", "com.apple.symbolichotkeys",
                         "AppleSymbolicHotKeys", "-dict-add", str(hk),
-                        "{enabled=0;}", check=False)
+                        entry, check=False)
             self._activate_settings(ctx)
             ctx.ok("Disabled native macOS screenshot shortcuts for CleanShot X "
                    "(applies after next logout/restart; bind Option+Shift+S "
