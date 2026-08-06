@@ -138,10 +138,11 @@ DEVENV_CLEANSHOT=1 ./setup.sh    # install CleanShot X + surface its setup check
 ```
 
 When opted in (or if CleanShot X is already installed), the `keybinds` module
-leaves the screenshot chord to CleanShot and prints a checklist to **activate
-your license** and **bind `Option+Shift+S`** to its Freeze/Capture-Area action
-(a one-time in-app step — CleanShot stores shortcuts internally, so it can't be
-scripted). Enable both flags together if you want them:
+**disables all native macOS screenshot shortcuts** (so they don't collide with
+CleanShot's — the "turn these off" dialog CleanShot pops on first launch is
+handled for you) and prints a checklist to **activate your license** and **bind
+`Option+Shift+S`** to its Freeze/Capture-Area action (a one-time in-app step —
+CleanShot stores shortcuts internally, so it can't be scripted). Enable both flags together if you want them:
 
 ```bash
 DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 ./setup.sh
