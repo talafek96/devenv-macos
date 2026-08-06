@@ -12,20 +12,18 @@ macos-option-as-alt = left
 copy-on-select = clipboard
 
 # --- Clipboard ---
-# Cmd+V and Ctrl+Shift+V both do a NORMAL text paste. Cmd+V is left exactly as
-# macOS's universal paste key — symmetric with every other Cmd shortcut — so it
-# pastes text everywhere, Claude Code included. Copy is Ctrl+C (only with a
-# selection, else it passes through as SIGINT) and Ctrl+Shift+C.
+# Ctrl+V and Ctrl+Shift+V both do a NORMAL text paste. Copy is Ctrl+C (only with
+# a selection, else it passes through as SIGINT) and Ctrl+Shift+C.
 #
-# Claude Code IMAGE paste lives on Ctrl+V: it's deliberately left UNBOUND so the
-# raw Ctrl+V byte (0x16, SYN) passes through to the running app — that's the key
-# Claude Code itself uses to paste an image from the clipboard. Ctrl+V is not a
-# paste key on macOS (Cmd+V is), so nothing native is lost by dedicating it here.
+# Claude Code IMAGE paste lives on Cmd+V: it sends the raw Ctrl+V byte (0x16,
+# SYN) that Claude Code intercepts to paste an image from the clipboard. (Claude
+# keys off the 0x16 control byte, not the physical key, so any key that emits it
+# works — and Cmd+V, being macOS's paste key, is the natural home for it here.)
 keybind = performable:ctrl+c=copy_to_clipboard
 keybind = ctrl+shift+c=copy_to_clipboard
-keybind = cmd+v=paste_from_clipboard
+keybind = ctrl+v=paste_from_clipboard
 keybind = ctrl+shift+v=paste_from_clipboard
-keybind = ctrl+v=unbind
+keybind = cmd+v=text:\x16
 
 # --- Newline for Claude Code (ESC+CR; WT itself sends \n) ---
 keybind = shift+enter=text:\x1b\r

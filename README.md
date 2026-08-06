@@ -45,9 +45,8 @@ exec zsh                    # pick up the new shell
 - **`~/.inputrc`** — readline: case-insensitive completion, prefix history search.
 - **`~/.config/zellij/config.kdl`** — locked-mode, mouse copy, Alt keybindings.
 - **`~/.config/ghostty/config`** — Windows-Terminal keybinds, `option-as-alt=left`,
-  text paste on Cmd+V *and* Ctrl+Shift+V, Claude Code **image paste on Ctrl+V**
-  (left unbound so the 0x16 byte reaches Claude — its native image-paste key;
-  Cmd+V stays macOS's universal paste, symmetric with every other Cmd shortcut),
+  text paste on Ctrl+V *and* Ctrl+Shift+V, Claude Code **image paste on Cmd+V**
+  (Cmd+V emits the Ctrl+V byte Claude catches to paste a clipboard image),
   Cmd+arrows → zellij pane focus. Ends
   with an optional include of `~/.config/ghostty/local.conf` (not tracked) for
   machine-local, personal-taste settings like `theme = …`.
