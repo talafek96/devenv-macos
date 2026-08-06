@@ -57,6 +57,26 @@ _MACCY_DOMAIN = "org.p0deje.Maccy"
 _MACCY_POPUP_KEY = "KeyboardShortcuts_popup"
 _MACCY_POPUP_OPTION_V = '{"carbonKeyCode":9,"carbonModifiers":2048}'
 
+# Maccy must be RUNNING for its Option+V global hotkey to fire — but installing
+# the cask doesn't make it launch at login, so a relogin silently kills it and
+# the hotkey goes dead. Own a small LaunchAgent that re-opens Maccy every login
+# (RunAtLoad → `open -a Maccy`; a no-op if it's already up). Prompt-free, unlike
+# the System Events "add login item" route (which needs an Automation grant).
+_MACCY_APP = Path("/Applications/Maccy.app")
+_MACCY_AGENT_LABEL = "com.devenv.maccy"
+_MACCY_AGENT_PLIST = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.devenv.maccy</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>Maccy</string></array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+"""
+
 # ── Screenshot hotkey → Option+Shift+S ──────────────────────
 # CleanShot X (opt-in, DEVENV_CLEANSHOT) is the preferred capture app — it can
 # FREEZE the screen so you can frame the shot. Its capture shortcut is set in
@@ -206,6 +226,21 @@ class KeybindsModule(Module):
                 "-string", _MACCY_POPUP_OPTION_V, check=False)
         ctx.ok("Set Maccy clipboard-history popup to Option+V "
                "(takes effect next time Maccy launches)")
+        self._ensure_maccy_login_item(ctx)
+
+    # Keep Maccy alive across logins so its Option+V hotkey stays live.
+    def _ensure_maccy_login_item(self, ctx) -> None:
+        if not _MACCY_APP.exists():
+            return
+        agents = ctx.home_dir / "Library/LaunchAgents"
+        agents.mkdir(parents=True, exist_ok=True)
+        plist = agents / f"{_MACCY_AGENT_LABEL}.plist"
+        if not plist.exists() or plist.read_text() != _MACCY_AGENT_PLIST:
+            plist.write_text(_MACCY_AGENT_PLIST)
+        # Reload so it's active now and registered for every login (idempotent).
+        ctx.run("launchctl", "unload", str(plist), check=False)
+        ctx.run("launchctl", "load", "-w", str(plist), check=False)
+        ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
 
     # Screenshot on Option+Shift+S — Windows `Win+Shift+S`.
     def _bind_screenshot_hotkey(self, ctx) -> None:

@@ -94,7 +94,9 @@ fast key repeat / press-and-hold off), **disabling macOS's `Ctrl+←/→`
 "move a space" Mission Control shortcuts** (they're grabbed system-wide and
 otherwise swallow `Ctrl+arrow` before the terminal can use it for word-jump),
 setting **Maccy's clipboard-history popup to `Option+V`** (the Windows `Win+V`
-clipboard — the Windows key sits where Option is on a Mac), binding
+clipboard — the Windows key sits where Option is on a Mac) and installing a
+LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
+isn't running — installing the cask alone doesn't auto-launch it), binding
 **screenshot to `Option+Shift+S`** (the Windows `Win+Shift+S` — CleanShot X if
 opted in / installed, otherwise the built-in macOS "copy selected area to
 clipboard"; see [CleanShot X is opt-in](#cleanshot-x-is-opt-in)),
