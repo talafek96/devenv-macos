@@ -142,12 +142,18 @@ When opted in (or if CleanShot X is already installed), the `keybinds` module:
   collide with CleanShot's (this satisfies the "turn these off" dialog CleanShot
   pops on first launch — it reads the same prefs — so you can just dismiss it;
   macOS itself only drops the old chords after a logout/restart).
-- **Sets CleanShot's "Capture Area" shortcut to `Option+Shift+S`** (best-effort,
-  and only if you haven't already assigned one — it writes the `LAVAtakeArea`
-  pref that CleanShot reads at launch, reverse-engineered from CleanShot 4.8.10).
-  Restart CleanShot X once to pick it up.
+- **Sets CleanShot's "Capture Area" shortcut to `Option+Shift+S`** and turns on
+  its **screen-freeze** (`freezeScreen`) so you can frame the shot while paused —
+  each written only if you haven't already set it, so a custom choice is never
+  stomped. (Reverse-engineered from CleanShot 4.8.10: `LAVAtakeArea` +
+  `freezeScreen` prefs, read at launch.) Restart CleanShot X once to pick them up.
 - **Prints a checklist** to activate your license (and set the shortcut by hand
   if the pref format ever moves between CleanShot versions).
+
+All of the above — the shortcut, the freeze default, *and* disabling the native
+screenshot shortcuts — apply **only** when CleanShot X is opted in or already
+installed. Without it, `keybinds` uses the native fallback and never touches
+CleanShot's prefs.
 
 Enable both opt-in flags together if you want them:
 

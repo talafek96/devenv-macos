@@ -82,6 +82,9 @@ _CLEANSHOT_AREA_KEY = "LAVAtakeArea"
 _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX = (
     "7b22636172626f6e4b6579223a312c22636172626f6e4d6f64696669657273223a323536307d"
 )
+# `freezeScreen` (bool) = the "freeze the screen while I frame the shot" toggle —
+# the whole reason for choosing CleanShot over the native capture. Default it on.
+_CLEANSHOT_FREEZE_KEY = "freezeScreen"
 
 # macOS "Screenshots" symbolic hotkeys (System Settings → Keyboard → Keyboard
 # Shortcuts → Screenshots). CleanShot X pops a dialog on first launch asking you
@@ -122,10 +125,9 @@ _CLEANSHOT_CHECKLIST = """\
        or untick them now in System Settings → Keyboard Shortcuts → Screenshots.)
     2. Activate your license: menu-bar icon → Settings → General → "Activate
        License" (or paste the key at first launch).
-    3. Option+Shift+S is already bound to "Capture Area" (set for you) — restart
-       CleanShot X once so it picks up the shortcut. If it didn't take, set it by
-       hand: Settings → Shortcuts → "Capture Area" → record ⌥⇧S. Want the screen
-       to FREEZE while you frame? Turn that on in Settings (freeze/self-timer).
+    3. Option+Shift+S → "Capture Area" and screen-freeze are both set for you —
+       restart CleanShot X once so it picks them up. If the shortcut didn't take,
+       set it by hand: Settings → Shortcuts → "Capture Area" → record ⌥⇧S.
        Captures land on the clipboard; the Quick Access Overlay saves to a file.
 """
 
@@ -223,7 +225,7 @@ class KeybindsModule(Module):
             self._activate_settings(ctx)
             ctx.ok("Disabled native macOS screenshot shortcuts for CleanShot X "
                    "(applies after next logout/restart)")
-            self._set_cleanshot_shortcut(ctx)
+            self._configure_cleanshot(ctx)
             return
         # Native fallback: "copy selected area to clipboard" → Option+Shift+S.
         ctx.run("defaults", "write", "com.apple.symbolichotkeys",
@@ -233,16 +235,27 @@ class KeybindsModule(Module):
         ctx.ok("Bound macOS area-screenshot → clipboard to Option+Shift+S "
                "(may need a logout to take effect)")
 
-    # Set CleanShot's Capture-Area shortcut to Option+Shift+S — but only if the
-    # user hasn't already assigned one, so we never stomp a custom binding.
-    def _set_cleanshot_shortcut(self, ctx) -> None:
+    # Configure CleanShot's Windows-feel defaults — each written only if the user
+    # hasn't already set it, so we never stomp their own choice. Both are read at
+    # launch, so restart CleanShot X (or set on a fresh install) to pick them up.
+    def _configure_cleanshot(self, ctx) -> None:
+        # Capture-Area shortcut → Option+Shift+S.
         if ctx.command_output("defaults", "read", _CLEANSHOT_DOMAIN, _CLEANSHOT_AREA_KEY):
             ctx.info("CleanShot 'Capture Area' shortcut already set — leaving it.")
-            return
-        ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_AREA_KEY,
-                "-data", _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX, check=False)
-        ctx.ok("Set CleanShot 'Capture Area' shortcut to Option+Shift+S "
-               "(restart CleanShot X to pick it up)")
+        else:
+            ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_AREA_KEY,
+                    "-data", _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX, check=False)
+            ctx.ok("Set CleanShot 'Capture Area' shortcut to Option+Shift+S")
+
+        # Freeze-screen-while-framing → on by default.
+        if ctx.command_output("defaults", "read", _CLEANSHOT_DOMAIN, _CLEANSHOT_FREEZE_KEY):
+            ctx.info("CleanShot freeze-screen already configured — leaving it.")
+        else:
+            ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_FREEZE_KEY,
+                    "-bool", "true", check=False)
+            ctx.ok("Enabled CleanShot freeze-screen (frame the shot while paused)")
+
+        ctx.info("Restart CleanShot X to pick up its shortcut / freeze settings.")
 
     def _activate_settings(self, ctx) -> None:
         ctx.run(_ACTIVATE_SETTINGS, "-u", check=False)
