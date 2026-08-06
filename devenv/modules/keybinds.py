@@ -89,8 +89,10 @@ _KARABINER_CHECKLIST = """\
 _CLEANSHOT_CHECKLIST = """\
   CleanShot X (opt-in screenshot app with screen-freeze):
     1. Launch CleanShot X → grant Screen Recording + Accessibility when prompted.
-       (Its "turn off native screenshot shortcuts" dialog is already handled —
-       this module disabled them, so just click Done / "I'll do it later".)
+       Its "turn off native screenshot shortcuts" dialog is already satisfied —
+       this module set them disabled in prefs (CleanShot reads that), so just
+       click Done. (macOS only fully drops the old chords after a logout/restart;
+       or untick them now in System Settings → Keyboard Shortcuts → Screenshots.)
     2. Activate your license: menu-bar icon → Settings → General → "Activate
        License" (or paste the key at first launch).
     3. Bind Option+Shift+S to capture: Settings → Shortcuts. To get the Windows
@@ -180,10 +182,12 @@ class KeybindsModule(Module):
     def _bind_screenshot_hotkey(self, ctx) -> None:
         # CleanShot X owns the screenshot when opted in or already installed. It
         # asks you to disable ALL native "Screenshots" shortcuts so they don't
-        # fight its capture hotkeys — we automate that here (the manual dialog
-        # CleanShot pops on first launch). Its own capture hotkey is still set
-        # inside the app: the checklist walks through license activation + the
-        # one-time Option+Shift+S binding.
+        # fight its capture hotkeys — we write that here. NOTE: macOS only reads
+        # these symbolic hotkeys at LOGIN, so `activateSettings -u` doesn't make
+        # it live; it takes effect on the next logout/restart (or untick them in
+        # System Settings → Keyboard Shortcuts → Screenshots for it to apply now).
+        # CleanShot's own capture hotkey is still set inside the app: the
+        # checklist walks through license activation + the Option+Shift+S binding.
         if ctx.cleanshot_enabled or _CLEANSHOT_APP.exists():
             for hk in _SCREENSHOT_HOTKEY_IDS:
                 ctx.run("defaults", "write", "com.apple.symbolichotkeys",
@@ -191,7 +195,8 @@ class KeybindsModule(Module):
                         "{enabled=0;}", check=False)
             self._activate_settings(ctx)
             ctx.ok("Disabled native macOS screenshot shortcuts for CleanShot X "
-                   "(bind Option+Shift+S inside CleanShot — see the checklist)")
+                   "(applies after next logout/restart; bind Option+Shift+S "
+                   "inside CleanShot — see the checklist)")
             return
         # Native fallback: "copy selected area to clipboard" → Option+Shift+S.
         ctx.run("defaults", "write", "com.apple.symbolichotkeys",
