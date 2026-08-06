@@ -42,6 +42,16 @@ _DEFAULTS = [
 #   80 = + shift (move window left)         82 = + shift (move window right)
 _DISABLE_SYMBOLIC_HOTKEYS = [79, 80, 81, 82]
 
+# ── Third-party app hotkeys (Windows-feel) ──────────────────
+# Maccy's clipboard-history popup → Option+V (the Windows `Win+V` clipboard,
+# with the Windows key sitting where Option is on a Mac). Maccy stores its
+# shortcut (KeyboardShortcuts lib) as a JSON string of Carbon key + modifier
+# codes: keyCode 9 = "V", modifier 2048 = optionKey (⌥ alone). Read at launch,
+# so it takes effect next time Maccy starts.
+_MACCY_DOMAIN = "org.p0deje.Maccy"
+_MACCY_POPUP_KEY = "KeyboardShortcuts_popup"
+_MACCY_POPUP_OPTION_V = '{"carbonKeyCode":9,"carbonModifiers":2048}'
+
 _GHOSTTY_APP_SUPPORT = "Library/Application Support/com.mitchellh.ghostty/config"
 
 _KARABINER_CHECKLIST = """\
@@ -75,6 +85,7 @@ class KeybindsModule(Module):
         self._dedupe_ghostty_app_support(ctx)
         self._apply_macos_defaults(ctx)
         self._disable_space_switch_hotkeys(ctx)
+        self._set_app_hotkeys(ctx)
         self._print_checklist(ctx)
 
     # Ghostty on macOS loads BOTH ~/.config/ghostty/config AND the App-Support
@@ -118,6 +129,13 @@ class KeybindsModule(Module):
         ctx.run("/System/Library/PrivateFrameworks/SystemAdministration.framework"
                 "/Resources/activateSettings", "-u", check=False)
         ctx.ok("Disabled macOS Ctrl+←/→ space-switching (frees Ctrl+arrow for word-jump)")
+
+    # Windows-feel global hotkeys for third-party apps (currently just Maccy).
+    def _set_app_hotkeys(self, ctx) -> None:
+        ctx.run("defaults", "write", _MACCY_DOMAIN, _MACCY_POPUP_KEY,
+                "-string", _MACCY_POPUP_OPTION_V, check=False)
+        ctx.ok("Set Maccy clipboard-history popup to Option+V "
+               "(takes effect next time Maccy launches)")
 
     def _print_checklist(self, ctx) -> None:
         ctx.header("Manual, one-time GUI permissions (cannot be scripted)")

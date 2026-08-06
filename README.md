@@ -45,7 +45,10 @@ exec zsh                    # pick up the new shell
 - **`~/.inputrc`** — readline: case-insensitive completion, prefix history search.
 - **`~/.config/zellij/config.kdl`** — locked-mode, mouse copy, Alt keybindings.
 - **`~/.config/ghostty/config`** — Windows-Terminal keybinds, `option-as-alt=left`,
-  Ctrl+V freed for Claude Code image paste, Cmd+arrows → zellij pane focus. Ends
+  text paste on Cmd+V *and* Ctrl+Shift+V, Claude Code **image paste on Ctrl+V**
+  (left unbound so the 0x16 byte reaches Claude — its native image-paste key;
+  Cmd+V stays macOS's universal paste, symmetric with every other Cmd shortcut),
+  Cmd+arrows → zellij pane focus. Ends
   with an optional include of `~/.config/ghostty/local.conf` (not tracked) for
   machine-local, personal-taste settings like `theme = …`.
 - **`~/.config/karabiner/karabiner.json`** *(opt-in — `DEVENV_KARABINER=1`)* —
@@ -90,6 +93,8 @@ double-loading the config), macOS defaults (globe tap = Change Input Source, nat
 fast key repeat / press-and-hold off), **disabling macOS's `Ctrl+←/→`
 "move a space" Mission Control shortcuts** (they're grabbed system-wide and
 otherwise swallow `Ctrl+arrow` before the terminal can use it for word-jump),
+setting **Maccy's clipboard-history popup to `Option+V`** (the Windows `Win+V`
+clipboard — the Windows key sits where Option is on a Mac),
 plus a printed checklist of the one-time
 GUI permission grants that can't be scripted (AltTab / Rectangle, and — when
 opted in — Karabiner).

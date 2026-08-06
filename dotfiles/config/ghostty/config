@@ -11,12 +11,19 @@ macos-option-as-alt = left
 
 copy-on-select = clipboard
 
-# --- Clipboard (WT: ctrl+c / ctrl+shift+c copy, ctrl+shift+v paste) ---
-# NOTE: plain ctrl+v is deliberately UNBOUND so the keypress passes through to
-# the running app — Claude Code uses Ctrl+V to paste an IMAGE from the clipboard.
-# Terminal text-paste lives on Ctrl+Shift+V (the Windows Terminal default).
+# --- Clipboard ---
+# Cmd+V and Ctrl+Shift+V both do a NORMAL text paste. Cmd+V is left exactly as
+# macOS's universal paste key — symmetric with every other Cmd shortcut — so it
+# pastes text everywhere, Claude Code included. Copy is Ctrl+C (only with a
+# selection, else it passes through as SIGINT) and Ctrl+Shift+C.
+#
+# Claude Code IMAGE paste lives on Ctrl+V: it's deliberately left UNBOUND so the
+# raw Ctrl+V byte (0x16, SYN) passes through to the running app — that's the key
+# Claude Code itself uses to paste an image from the clipboard. Ctrl+V is not a
+# paste key on macOS (Cmd+V is), so nothing native is lost by dedicating it here.
 keybind = performable:ctrl+c=copy_to_clipboard
 keybind = ctrl+shift+c=copy_to_clipboard
+keybind = cmd+v=paste_from_clipboard
 keybind = ctrl+shift+v=paste_from_clipboard
 keybind = ctrl+v=unbind
 
