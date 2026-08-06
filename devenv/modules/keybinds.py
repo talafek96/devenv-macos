@@ -8,7 +8,12 @@ them and prints what still needs a manual click.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from devenv.modules import Module
+
+_ACTIVATE_SETTINGS = ("/System/Library/PrivateFrameworks/SystemAdministration"
+                      ".framework/Resources/activateSettings")
 
 # ── macOS defaults (domain, key, type, value) ───────────────
 # Each is a per-user `defaults write`. Several only take full effect after a
@@ -52,6 +57,18 @@ _MACCY_DOMAIN = "org.p0deje.Maccy"
 _MACCY_POPUP_KEY = "KeyboardShortcuts_popup"
 _MACCY_POPUP_OPTION_V = '{"carbonKeyCode":9,"carbonModifiers":2048}'
 
+# ── Screenshot hotkey → Option+Shift+S ──────────────────────
+# CleanShot X (opt-in, DEVENV_CLEANSHOT) is the preferred capture app — it can
+# FREEZE the screen so you can frame the shot. Its capture shortcut is set in
+# the app itself (Settings → Shortcuts) — surfaced in the checklist. When it's
+# not present, we bind the built-in macOS "copy selected area to clipboard"
+# (symbolic hotkey 31 — the Windows `Win+Shift+S` behaviour) to Option+Shift+S.
+#   parameters = (ascii, virtualKeyCode, modifierMask)
+#   's' = 115, kVK_ANSI_S = 1, Option+Shift = 524288 (⌥) + 131072 (⇧) = 655360
+_CLEANSHOT_APP = Path("/Applications/CleanShot X.app")
+_SCREENSHOT_HOTKEY_ID = 31
+_SCREENSHOT_HOTKEY_VALUE = "{enabled=1;value={parameters=(115,1,655360);type=standard;};}"
+
 _GHOSTTY_APP_SUPPORT = "Library/Application Support/com.mitchellh.ghostty/config"
 
 _KARABINER_CHECKLIST = """\
@@ -59,6 +76,18 @@ _KARABINER_CHECKLIST = """\
     1. Open Karabiner-Elements → approve the driver / system-extension prompt.
     2. System Settings → Privacy & Security → Input Monitoring   → enable Karabiner.
     3. System Settings → Privacy & Security → Accessibility        → enable Karabiner.
+"""
+
+_CLEANSHOT_CHECKLIST = """\
+  CleanShot X (opt-in screenshot app with screen-freeze):
+    1. Launch CleanShot X → grant Screen Recording + Accessibility when prompted.
+    2. Activate your license: menu-bar icon → Settings → General → "Activate
+       License" (or paste the key at first launch).
+    3. Bind Option+Shift+S to capture: Settings → Shortcuts. To get the Windows
+       "freeze then frame" behaviour, record ⌥⇧S on the "Capture Area (Freeze)"
+       / "Freeze" action (there's also a plain "Capture Area" if you prefer no
+       freeze). Captures land on the clipboard + the Quick Access Overlay lets
+       you save to a file afterwards.
 """
 
 _PERMISSION_CHECKLIST = """\
@@ -86,6 +115,7 @@ class KeybindsModule(Module):
         self._apply_macos_defaults(ctx)
         self._disable_space_switch_hotkeys(ctx)
         self._set_app_hotkeys(ctx)
+        self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
 
     # Ghostty on macOS loads BOTH ~/.config/ghostty/config AND the App-Support
@@ -126,8 +156,7 @@ class KeybindsModule(Module):
                     check=False)
         # Apply without a full logout (Ctrl+arrow may still need a re-login on
         # some macOS builds to fully release from the WindowManager).
-        ctx.run("/System/Library/PrivateFrameworks/SystemAdministration.framework"
-                "/Resources/activateSettings", "-u", check=False)
+        self._activate_settings(ctx)
         ctx.ok("Disabled macOS Ctrl+←/→ space-switching (frees Ctrl+arrow for word-jump)")
 
     # Windows-feel global hotkeys for third-party apps (currently just Maccy).
@@ -137,8 +166,32 @@ class KeybindsModule(Module):
         ctx.ok("Set Maccy clipboard-history popup to Option+V "
                "(takes effect next time Maccy launches)")
 
+    # Screenshot on Option+Shift+S — Windows `Win+Shift+S`.
+    def _bind_screenshot_hotkey(self, ctx) -> None:
+        # CleanShot X owns the screenshot when opted in or already installed:
+        # its capture hotkey is configured inside the app (the checklist walks
+        # the user through license activation + setting Option+Shift+S). We do
+        # NOT touch the native symbolic hotkey in that case, so the two can't
+        # fight over the chord.
+        if ctx.cleanshot_enabled or _CLEANSHOT_APP.exists():
+            ctx.info("CleanShot X handles screenshots — bind Option+Shift+S inside "
+                     "it (Settings → Shortcuts); see the checklist.")
+            return
+        # Native fallback: "copy selected area to clipboard" → Option+Shift+S.
+        ctx.run("defaults", "write", "com.apple.symbolichotkeys",
+                "AppleSymbolicHotKeys", "-dict-add", str(_SCREENSHOT_HOTKEY_ID),
+                _SCREENSHOT_HOTKEY_VALUE, check=False)
+        self._activate_settings(ctx)
+        ctx.ok("Bound macOS area-screenshot → clipboard to Option+Shift+S "
+               "(may need a logout to take effect)")
+
+    def _activate_settings(self, ctx) -> None:
+        ctx.run(_ACTIVATE_SETTINGS, "-u", check=False)
+
     def _print_checklist(self, ctx) -> None:
         ctx.header("Manual, one-time GUI permissions (cannot be scripted)")
         if ctx.karabiner_enabled:
             print(_KARABINER_CHECKLIST)
+        if ctx.cleanshot_enabled or _CLEANSHOT_APP.exists():
+            print(_CLEANSHOT_CHECKLIST)
         print(_PERMISSION_CHECKLIST)

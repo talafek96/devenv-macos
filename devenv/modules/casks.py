@@ -33,6 +33,11 @@ CASKS = [
 # Windows-feel keymap. Its installer prompts for your password.
 _KARABINER_CASK = "karabiner-elements"
 
+# Opt-in only (DEVENV_CLEANSHOT=1): the paid screenshot app with "freeze
+# screen" capture. Needs a one-time license activation (guided by the keybinds
+# module's checklist). Hotkeyed to Option+Shift+S there too.
+_CLEANSHOT_CASK = "cleanshot"
+
 
 class CasksModule(Module):
     name = "casks"
@@ -48,6 +53,14 @@ class CasksModule(Module):
         else:
             ctx.info("Karabiner keymap disabled — skipping karabiner-elements "
                      "(set DEVENV_KARABINER=1 to include it).")
+
+        if ctx.cleanshot_enabled:
+            casks.append(_CLEANSHOT_CASK)
+            ctx.info("CleanShot X enabled (DEVENV_CLEANSHOT) — including cleanshot; "
+                     "activate your license after install (see the checklist).")
+        else:
+            ctx.info("CleanShot X disabled — skipping cleanshot; Option+Shift+S "
+                     "will use the macOS screenshot (set DEVENV_CLEANSHOT=1 to opt in).")
 
         ctx.info(f"Installing {len(casks)} casks (skips any already present)...")
         ctx.run("brew", "install", "--cask", *casks, check=False)

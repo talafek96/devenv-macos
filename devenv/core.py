@@ -27,6 +27,12 @@ C = _Colors
 # running setup, e.g.  DEVENV_KARABINER=1 ./setup.sh
 KARABINER_ENV = "DEVENV_KARABINER"
 
+# CleanShot X (the paid screenshot app with the "freeze screen" capture) is
+# likewise opt-in: set this truthy to install it and hotkey it to Option+Shift+S.
+# When unset, the built-in macOS area-screenshot is bound to Option+Shift+S
+# instead (unless CleanShot X is already installed, in which case it's used).
+CLEANSHOT_ENV = "DEVENV_CLEANSHOT"
+
 
 class Context:
     """Shared state and helpers passed to every module."""
@@ -50,6 +56,11 @@ class Context:
     def karabiner_enabled(self) -> bool:
         """Whether the Karabiner keymap is opted in (DEVENV_KARABINER)."""
         return self.env_flag(KARABINER_ENV)
+
+    @property
+    def cleanshot_enabled(self) -> bool:
+        """Whether CleanShot X is opted in (DEVENV_CLEANSHOT)."""
+        return self.env_flag(CLEANSHOT_ENV)
 
     # ── Homebrew ────────────────────────────────────────────
 

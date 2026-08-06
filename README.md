@@ -64,7 +64,8 @@ exec zsh                    # pick up the new shell
 ### Homebrew casks (`casks`)
 `ghostty`, `alt-tab`, `rectangle`, `maccy`, `claude-code`, `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`.
-`karabiner-elements` is added **only** when `DEVENV_KARABINER=1` (see below).
+`karabiner-elements` is added **only** when `DEVENV_KARABINER=1`, and
+`cleanshot` (CleanShot X) **only** when `DEVENV_CLEANSHOT=1` (both opt-in — see below).
 
 ### Mac App Store apps (`appstore`)
 Installed via `mas` (needs you signed in to the App Store):
@@ -94,7 +95,10 @@ fast key repeat / press-and-hold off), **disabling macOS's `Ctrl+←/→`
 "move a space" Mission Control shortcuts** (they're grabbed system-wide and
 otherwise swallow `Ctrl+arrow` before the terminal can use it for word-jump),
 setting **Maccy's clipboard-history popup to `Option+V`** (the Windows `Win+V`
-clipboard — the Windows key sits where Option is on a Mac),
+clipboard — the Windows key sits where Option is on a Mac), binding
+**screenshot to `Option+Shift+S`** (the Windows `Win+Shift+S` — CleanShot X if
+opted in / installed, otherwise the built-in macOS "copy selected area to
+clipboard"; see [CleanShot X is opt-in](#cleanshot-x-is-opt-in)),
 plus a printed checklist of the one-time
 GUI permission grants that can't be scripted (AltTab / Rectangle, and — when
 opted in — Karabiner).
@@ -121,6 +125,33 @@ Accepted truthy values: `1`, `true`, `yes`, `on`. When unset, `casks` skips
 `karabiner-elements`, `dotfiles` skips the `karabiner.json` symlink, and
 `keybinds` omits the Karabiner permission steps. Re-running **without** the flag
 never removes an already-linked keymap — it just stops managing it.
+
+### CleanShot X is opt-in
+
+Unlike Windows, the macOS built-in screenshot doesn't **freeze the screen** when
+you start a capture, which makes it hard to time/frame a shot around menus or
+hover states. [CleanShot X](https://cleanshot.com) solves that (its "Freeze"
+capture pauses the display), and can copy to the clipboard *and* save to a file
+afterwards — but it's a **paid app** ($29 one-time), so it's **opt-in**:
+
+```bash
+DEVENV_CLEANSHOT=1 ./setup.sh    # install CleanShot X + surface its setup checklist
+```
+
+When opted in (or if CleanShot X is already installed), the `keybinds` module
+leaves the screenshot chord to CleanShot and prints a checklist to **activate
+your license** and **bind `Option+Shift+S`** to its Freeze/Capture-Area action
+(a one-time in-app step — CleanShot stores shortcuts internally, so it can't be
+scripted). Enable both flags together if you want them:
+
+```bash
+DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 ./setup.sh
+```
+
+**When unset** (and CleanShot X isn't installed), `keybinds` instead binds the
+built-in macOS **"copy selected area to clipboard"** to `Option+Shift+S` — the
+Windows `Win+Shift+S` behaviour (no freeze, but zero-install). Some macOS builds
+only apply this after a logout.
 
 ### Function-key row (F1–F12) & the globe/fn key
 
@@ -173,6 +204,7 @@ self-update, dotfile symlinks are re-pointed, and existing files are backed up t
 ```bash
 ./setup.sh                       # full setup (all modules)
 DEVENV_KARABINER=1 ./setup.sh    # full setup + the opt-in Karabiner keymap
+DEVENV_CLEANSHOT=1 ./setup.sh    # full setup + CleanShot X (paid screenshot app)
 ./setup.sh --only casks,dotfiles # just those modules
 ./setup.sh --skip tools          # everything except the dev toolchain
 ./setup.sh list                  # list modules in run order
