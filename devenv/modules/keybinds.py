@@ -69,6 +69,20 @@ _CLEANSHOT_APP = Path("/Applications/CleanShot X.app")
 _SCREENSHOT_HOTKEY_ID = 31
 _SCREENSHOT_HOTKEY_VALUE = "{enabled=1;value={parameters=(115,1,655360);type=standard;};}"
 
+# CleanShot X's "Capture Area" shortcut → Option+Shift+S. Reverse-engineered by
+# diffing its prefs (CleanShot 4.8.10): the shortcut lives under `LAVAtakeArea`
+# as a Data blob whose bytes are the JSON string
+#     {"carbonKey":1,"carbonModifiers":2560}
+# carbonKey 1 = kVK_ANSI_S; carbonModifiers 2560 = optionKey 2048 + shiftKey 512.
+# `defaults write -data <hex>` reproduces that blob; CleanShot reads it at launch
+# (works even pre-seeded before its first run). Opaque per-version key, so this is
+# best-effort — the checklist covers setting it by hand if the format ever moves.
+_CLEANSHOT_DOMAIN = "pl.maketheweb.cleanshotx"
+_CLEANSHOT_AREA_KEY = "LAVAtakeArea"
+_CLEANSHOT_AREA_OPTION_SHIFT_S_HEX = (
+    "7b22636172626f6e4b6579223a312c22636172626f6e4d6f64696669657273223a323536307d"
+)
+
 # macOS "Screenshots" symbolic hotkeys (System Settings → Keyboard → Keyboard
 # Shortcuts → Screenshots). CleanShot X pops a dialog on first launch asking you
 # to turn these OFF so they don't collide with its capture shortcuts; we automate
@@ -108,11 +122,11 @@ _CLEANSHOT_CHECKLIST = """\
        or untick them now in System Settings → Keyboard Shortcuts → Screenshots.)
     2. Activate your license: menu-bar icon → Settings → General → "Activate
        License" (or paste the key at first launch).
-    3. Bind Option+Shift+S to capture: Settings → Shortcuts. To get the Windows
-       "freeze then frame" behaviour, record ⌥⇧S on the "Capture Area (Freeze)"
-       / "Freeze" action (there's also a plain "Capture Area" if you prefer no
-       freeze). Captures land on the clipboard + the Quick Access Overlay lets
-       you save to a file afterwards.
+    3. Option+Shift+S is already bound to "Capture Area" (set for you) — restart
+       CleanShot X once so it picks up the shortcut. If it didn't take, set it by
+       hand: Settings → Shortcuts → "Capture Area" → record ⌥⇧S. Want the screen
+       to FREEZE while you frame? Turn that on in Settings (freeze/self-timer).
+       Captures land on the clipboard; the Quick Access Overlay saves to a file.
 """
 
 _PERMISSION_CHECKLIST = """\
@@ -208,8 +222,8 @@ class KeybindsModule(Module):
                         entry, check=False)
             self._activate_settings(ctx)
             ctx.ok("Disabled native macOS screenshot shortcuts for CleanShot X "
-                   "(applies after next logout/restart; bind Option+Shift+S "
-                   "inside CleanShot — see the checklist)")
+                   "(applies after next logout/restart)")
+            self._set_cleanshot_shortcut(ctx)
             return
         # Native fallback: "copy selected area to clipboard" → Option+Shift+S.
         ctx.run("defaults", "write", "com.apple.symbolichotkeys",
@@ -218,6 +232,17 @@ class KeybindsModule(Module):
         self._activate_settings(ctx)
         ctx.ok("Bound macOS area-screenshot → clipboard to Option+Shift+S "
                "(may need a logout to take effect)")
+
+    # Set CleanShot's Capture-Area shortcut to Option+Shift+S — but only if the
+    # user hasn't already assigned one, so we never stomp a custom binding.
+    def _set_cleanshot_shortcut(self, ctx) -> None:
+        if ctx.command_output("defaults", "read", _CLEANSHOT_DOMAIN, _CLEANSHOT_AREA_KEY):
+            ctx.info("CleanShot 'Capture Area' shortcut already set — leaving it.")
+            return
+        ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_AREA_KEY,
+                "-data", _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX, check=False)
+        ctx.ok("Set CleanShot 'Capture Area' shortcut to Option+Shift+S "
+               "(restart CleanShot X to pick it up)")
 
     def _activate_settings(self, ctx) -> None:
         ctx.run(_ACTIVATE_SETTINGS, "-u", check=False)

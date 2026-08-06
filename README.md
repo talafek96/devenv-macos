@@ -137,15 +137,19 @@ afterwards — but it's a **paid app** ($29 one-time), so it's **opt-in**:
 DEVENV_CLEANSHOT=1 ./setup.sh    # install CleanShot X + surface its setup checklist
 ```
 
-When opted in (or if CleanShot X is already installed), the `keybinds` module
-**disables all native macOS screenshot shortcuts** in prefs so they don't
-collide with CleanShot's (this satisfies the "turn these off" dialog CleanShot
-pops on first launch — it reads the same prefs — so you can just dismiss it;
-macOS itself only drops the old chords after a logout/restart). It then prints a
-checklist to **activate your license** and **bind `Option+Shift+S`** to its
-Freeze/Capture-Area action — a one-time in-app step, since CleanShot stores its
-shortcuts under opaque keys that can't be scripted safely. Enable both flags
-together if you want them:
+When opted in (or if CleanShot X is already installed), the `keybinds` module:
+- **Disables all native macOS screenshot shortcuts** in prefs so they don't
+  collide with CleanShot's (this satisfies the "turn these off" dialog CleanShot
+  pops on first launch — it reads the same prefs — so you can just dismiss it;
+  macOS itself only drops the old chords after a logout/restart).
+- **Sets CleanShot's "Capture Area" shortcut to `Option+Shift+S`** (best-effort,
+  and only if you haven't already assigned one — it writes the `LAVAtakeArea`
+  pref that CleanShot reads at launch, reverse-engineered from CleanShot 4.8.10).
+  Restart CleanShot X once to pick it up.
+- **Prints a checklist** to activate your license (and set the shortcut by hand
+  if the pref format ever moves between CleanShot versions).
+
+Enable both opt-in flags together if you want them:
 
 ```bash
 DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 ./setup.sh
