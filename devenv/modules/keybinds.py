@@ -106,6 +106,25 @@ _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX = (
 # the whole reason for choosing CleanShot over the native capture. Default it on.
 _CLEANSHOT_FREEZE_KEY = "freezeScreen"
 
+# CleanShot's Option+Shift+S is an IN-APP global hotkey, so CleanShot must be
+# RUNNING for it to fire — but the cask doesn't make it launch at login, so a
+# restart silently kills it and the screenshot shortcut goes dead (same failure
+# mode as Maccy). Own a LaunchAgent that re-opens CleanShot every login
+# (RunAtLoad → `open -a "CleanShot X"`; a no-op if it's already up).
+_CLEANSHOT_AGENT_LABEL = "com.devenv.cleanshotx"
+_CLEANSHOT_AGENT_PLIST = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.devenv.cleanshotx</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>CleanShot X</string></array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+"""
+
 # macOS "Screenshots" symbolic hotkeys (System Settings → Keyboard → Keyboard
 # Shortcuts → Screenshots). CleanShot X pops a dialog on first launch asking you
 # to turn these OFF so they don't collide with its capture shortcuts; we automate
@@ -232,15 +251,21 @@ class KeybindsModule(Module):
     def _ensure_maccy_login_item(self, ctx) -> None:
         if not _MACCY_APP.exists():
             return
+        self._ensure_login_item(ctx, _MACCY_AGENT_LABEL, _MACCY_AGENT_PLIST)
+        ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
+
+    # Write + (re)load a per-user LaunchAgent that re-opens an app every login.
+    # Shared by Maccy and CleanShot: both expose global hotkeys that only fire
+    # while the app is running, and neither cask launches itself at login.
+    def _ensure_login_item(self, ctx, label: str, plist_text: str) -> None:
         agents = ctx.home_dir / "Library/LaunchAgents"
         agents.mkdir(parents=True, exist_ok=True)
-        plist = agents / f"{_MACCY_AGENT_LABEL}.plist"
-        if not plist.exists() or plist.read_text() != _MACCY_AGENT_PLIST:
-            plist.write_text(_MACCY_AGENT_PLIST)
+        plist = agents / f"{label}.plist"
+        if not plist.exists() or plist.read_text() != plist_text:
+            plist.write_text(plist_text)
         # Reload so it's active now and registered for every login (idempotent).
         ctx.run("launchctl", "unload", str(plist), check=False)
         ctx.run("launchctl", "load", "-w", str(plist), check=False)
-        ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
 
     # Screenshot on Option+Shift+S — Windows `Win+Shift+S`.
     def _bind_screenshot_hotkey(self, ctx) -> None:
@@ -289,6 +314,12 @@ class KeybindsModule(Module):
             ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_FREEZE_KEY,
                     "-bool", "true", check=False)
             ctx.ok("Enabled CleanShot freeze-screen (frame the shot while paused)")
+
+        # CleanShot's Option+Shift+S only fires while CleanShot is running; keep
+        # it alive across logins so the screenshot hotkey survives a restart.
+        if _CLEANSHOT_APP.exists():
+            self._ensure_login_item(ctx, _CLEANSHOT_AGENT_LABEL, _CLEANSHOT_AGENT_PLIST)
+            ctx.ok("CleanShot X set to launch at login (its Option+Shift+S hotkey needs it running)")
 
         ctx.info("Restart CleanShot X to pick up its shortcut / freeze settings.")
 
