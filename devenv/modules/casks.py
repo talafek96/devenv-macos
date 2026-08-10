@@ -27,6 +27,7 @@ CASKS = [
     "transmission",
     "vlc",
     "macdroid",             # Android <-> Mac file transfer
+    "adobe-acrobat-reader", # PDF reader (self-updating)
 ]
 
 # Opt-in only (DEVENV_KARABINER=1): the keyboard remapper behind the
