@@ -27,7 +27,7 @@ CASKS = [
     "transmission",
     "vlc",
     "macdroid",             # Android <-> Mac file transfer
-    "adobe-acrobat-pro",    # Adobe Acrobat Pro DC — PDF reader/editor (self-updating)
+    "adobe-acrobat-reader", # Adobe Acrobat Reader — free PDF reader (self-updating)
 ]
 
 # Opt-in only (DEVENV_KARABINER=1): the keyboard remapper behind the
