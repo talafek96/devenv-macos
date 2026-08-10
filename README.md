@@ -63,7 +63,7 @@ exec zsh                    # pick up the new shell
 ### Homebrew casks (`casks`)
 `ghostty`, `alt-tab`, `rectangle`, `maccy`, `claude-code`, `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`,
-`adobe-acrobat-reader`.
+`adobe-acrobat-pro`.
 `karabiner-elements` is added **only** when `DEVENV_KARABINER=1`, and
 `cleanshot` (CleanShot X) **only** when `DEVENV_CLEANSHOT=1` (both opt-in — see below).
 
