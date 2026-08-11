@@ -196,6 +196,26 @@ alone. Anything already at a target path is backed up to
 `<name>.devenv-backup.<timestamp>` before the symlink replaces it, same as the
 dotfiles module. Re-running is a no-op once linked.
 
+**Opting back out.** Set the flag to `uninstall` (`remove` and `unlink` also
+work) to remove the links:
+
+```bash
+DEVENV_CLAUDE_ASSETS=uninstall ./setup.sh --only claude
+```
+
+Note the asymmetry, which is deliberate: **unsetting** the flag stops managing
+the assets and leaves them in place (same convention as the Karabiner keymap);
+only an explicit `uninstall` removes them. That way a missing env var — in a
+fresh shell, a cron job, a CI run — can never silently tear down your agent
+setup.
+
+Uninstall is as conservative as install. It removes **only** symlinks that point
+into this repo's `devenv/assets/claude/`; a real file or directory you put at one
+of those paths, or a symlink pointing somewhere else, is reported and left
+untouched. Backups from the original install are not restored automatically —
+they stay as `*.devenv-backup.*` for you to restore or delete. Re-running the
+uninstall is a no-op.
+
 The `duckduckgo-search` and `web-scraper` skills run as `uv` scripts with
 [PEP 723](https://peps.python.org/pep-0723/) inline dependencies — the `tools`
 module already installs `uv`, so they need no separate setup.
@@ -258,6 +278,7 @@ self-update, dotfile symlinks are re-pointed, and existing files are backed up t
 DEVENV_KARABINER=1 ./setup.sh    # full setup + the opt-in Karabiner keymap
 DEVENV_CLEANSHOT=1 ./setup.sh    # full setup + CleanShot X (paid screenshot app)
 DEVENV_CLAUDE_ASSETS=1 ./setup.sh  # full setup + Claude Code agents/skills/commands
+DEVENV_CLAUDE_ASSETS=uninstall ./setup.sh --only claude   # remove those links again
 ./setup.sh --only casks,dotfiles # just those modules
 ./setup.sh --skip tools          # everything except the dev toolchain
 ./setup.sh list                  # list modules in run order

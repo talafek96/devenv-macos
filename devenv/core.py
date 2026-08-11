@@ -38,7 +38,16 @@ CLEANSHOT_ENV = "DEVENV_CLEANSHOT"
 #   DEVENV_CLAUDE_ASSETS=1 ./setup.sh
 # Opt-in because it writes into a directory Claude Code owns and that users
 # customize by hand; nobody's agent setup should change without asking.
+#
+# Tri-state, unlike the other flags: truthy installs, one of the UNINSTALL
+# values below removes the links, and unset/falsy leaves whatever is there
+# alone (stop managing, don't uninstall — same convention as the Karabiner
+# keymap). Opting out has to be *said*, so a missing env var in a cron job or a
+# fresh shell can never silently tear down someone's agent setup.
 CLAUDE_ASSETS_ENV = "DEVENV_CLAUDE_ASSETS"
+
+# Values of an opt-in flag that mean "actively remove what was installed".
+UNINSTALL_VALUES = ("uninstall", "remove", "unlink")
 
 
 class Context:
@@ -70,10 +79,28 @@ class Context:
         """Whether CleanShot X is opted in (DEVENV_CLEANSHOT)."""
         return self.env_flag(CLEANSHOT_ENV)
 
+    def env_mode(self, name: str) -> str:
+        """Tri-state opt-in flag: 'install', 'uninstall', or 'off'.
+
+        Truthy (1/true/yes/on) installs; an UNINSTALL_VALUES word removes;
+        anything else — including unset — is 'off' (leave alone, don't remove).
+        """
+        val = (os.environ.get(name) or "").strip().lower()
+        if val in UNINSTALL_VALUES:
+            return "uninstall"
+        if val in ("1", "true", "yes", "on"):
+            return "install"
+        return "off"
+
+    @property
+    def claude_assets_mode(self) -> str:
+        """Claude Code asset mode (DEVENV_CLAUDE_ASSETS): install/uninstall/off."""
+        return self.env_mode(CLAUDE_ASSETS_ENV)
+
     @property
     def claude_assets_enabled(self) -> bool:
         """Whether the default Claude Code assets are opted in (DEVENV_CLAUDE_ASSETS)."""
-        return self.env_flag(CLAUDE_ASSETS_ENV)
+        return self.claude_assets_mode == "install"
 
     # ── Homebrew ────────────────────────────────────────────
 
