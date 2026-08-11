@@ -33,6 +33,13 @@ KARABINER_ENV = "DEVENV_KARABINER"
 # instead (unless CleanShot X is already installed, in which case it's used).
 CLEANSHOT_ENV = "DEVENV_CLEANSHOT"
 
+# The default Claude Code agents, skills, and commands (devenv/assets/claude/)
+# are NOT linked into ~/.claude unless this is set truthy, e.g.
+#   DEVENV_CLAUDE_ASSETS=1 ./setup.sh
+# Opt-in because it writes into a directory Claude Code owns and that users
+# customize by hand; nobody's agent setup should change without asking.
+CLAUDE_ASSETS_ENV = "DEVENV_CLAUDE_ASSETS"
+
 
 class Context:
     """Shared state and helpers passed to every module."""
@@ -41,6 +48,7 @@ class Context:
         self.devenv_dir = devenv_dir
         self.home_dir = home_dir or Path.home()
         self.dotfiles_dir = devenv_dir / "dotfiles"
+        self.assets_dir = devenv_dir / "devenv" / "assets"
         self._brew_prefix: str | None = None
 
     # ── opt-in feature flags ────────────────────────────────
@@ -61,6 +69,11 @@ class Context:
     def cleanshot_enabled(self) -> bool:
         """Whether CleanShot X is opted in (DEVENV_CLEANSHOT)."""
         return self.env_flag(CLEANSHOT_ENV)
+
+    @property
+    def claude_assets_enabled(self) -> bool:
+        """Whether the default Claude Code assets are opted in (DEVENV_CLAUDE_ASSETS)."""
+        return self.env_flag(CLAUDE_ASSETS_ENV)
 
     # ── Homebrew ────────────────────────────────────────────
 

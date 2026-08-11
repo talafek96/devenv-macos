@@ -1,0 +1,26 @@
+{
+  "skill_name": "claude-md",
+  "evals": [
+    {
+      "id": 0,
+      "name": "lint-bad-file",
+      "prompt": "Can you review my CLAUDE.md and tell me what's wrong with it? Path: <FIX>/lint/CLAUDE.md. Write your review to review.md in the output dir.",
+      "expected_output": "A review that flags the hardcoded AWS + GitHub secrets, the rm -rf / and curl|bash example commands, the broken @import, the vague instructions, and the oversized/no-real-content problems; severity-ranked.",
+      "files": ["fixtures/lint/CLAUDE.md"]
+    },
+    {
+      "id": 1,
+      "name": "refactor-bloated",
+      "prompt": "My CLAUDE.md has grown huge and messy. Refactor it to follow best practices. Path: <FIX>/refactor/CLAUDE.md. Put the rewritten CLAUDE.md (and any split-out files) in the output dir.",
+      "expected_output": "A much shorter root CLAUDE.md; generic best-practice bloat deleted; language-specific rules moved to path-scoped .claude/rules/ files; the huge SQL schema replaced by a pointer; stale 2021 deploy notes flagged/removed.",
+      "files": ["fixtures/refactor/CLAUDE.md"]
+    },
+    {
+      "id": 2,
+      "name": "create-from-scratch",
+      "prompt": "This repo has no CLAUDE.md. Create a good one. The repo is at <FIX>/create/ (a Next.js + TypeScript storefront).",
+      "expected_output": "A concise root CLAUDE.md with real commands (dev/build/test/lint from package.json), stack+versions, a boundaries section, no invented facts, under ~200 lines; ideally notes what it had to assume vs. would ask the user.",
+      "files": ["fixtures/create/"]
+    }
+  ]
+}

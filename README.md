@@ -164,6 +164,42 @@ Enable both opt-in flags together if you want them:
 DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 ./setup.sh
 ```
 
+### Claude Code assets are opt-in
+
+The repo ships a default set of [Claude Code](https://claude.com/claude-code)
+agents, skills, and slash commands under `devenv/assets/claude/`. The `claude`
+module links them into `~/.claude/` so a fresh machine gets the same agent setup,
+and `git pull` keeps them current. It is **opt-in**:
+
+```bash
+DEVENV_CLAUDE_ASSETS=1 ./setup.sh                # full setup, with the Claude assets
+DEVENV_CLAUDE_ASSETS=1 ./setup.sh --only claude  # just link the assets
+```
+
+What gets linked:
+
+- **Agents** — `prior-art-researcher` (iterative prior-art research for design
+  and architecture questions) and `query-librarian` (compacts the researcher's
+  accumulated query lessons into a ranked playbook).
+- **Skills** — `prior-art`, `duckduckgo-search`, `web-scraper` (the
+  researcher agent routes all its fetching through these three, so they belong
+  wherever the agent lives), plus `claude-md-standards`, `explain-with-trees`,
+  `reconcile-docs`, and `resume-remote-handoff`.
+- **Commands** — `/end-session` (wind-down ritual) and `/shift-handoff`
+  (compaction prompt for the next session).
+
+It's opt-in because `~/.claude/` is a directory Claude Code owns and that people
+customize by hand — an unrelated setup run shouldn't change your agent setup.
+Each asset is linked **individually** rather than linking the parent
+directories, so your own agents and skills sitting alongside these are left
+alone. Anything already at a target path is backed up to
+`<name>.devenv-backup.<timestamp>` before the symlink replaces it, same as the
+dotfiles module. Re-running is a no-op once linked.
+
+The `duckduckgo-search` and `web-scraper` skills run as `uv` scripts with
+[PEP 723](https://peps.python.org/pep-0723/) inline dependencies — the `tools`
+module already installs `uv`, so they need no separate setup.
+
 **When unset** (and CleanShot X isn't installed), `keybinds` instead binds the
 built-in macOS **"copy selected area to clipboard"** to `Option+Shift+S` — the
 Windows `Win+Shift+S` behaviour (no freeze, but zero-install). Some macOS builds
@@ -221,6 +257,7 @@ self-update, dotfile symlinks are re-pointed, and existing files are backed up t
 ./setup.sh                       # full setup (all modules)
 DEVENV_KARABINER=1 ./setup.sh    # full setup + the opt-in Karabiner keymap
 DEVENV_CLEANSHOT=1 ./setup.sh    # full setup + CleanShot X (paid screenshot app)
+DEVENV_CLAUDE_ASSETS=1 ./setup.sh  # full setup + Claude Code agents/skills/commands
 ./setup.sh --only casks,dotfiles # just those modules
 ./setup.sh --skip tools          # everything except the dev toolchain
 ./setup.sh list                  # list modules in run order
