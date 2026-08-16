@@ -983,7 +983,7 @@
                         ]
                     },
                     {
-                        "description": "[Win][Close] Alt+F4 → close whole window (Cmd+Shift+W) · not in Jump",
+                        "description": "[Win][Close] Alt+F4 → quit app (Cmd+Q) · not in Jump",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -1004,8 +1004,8 @@
                                 },
                                 "to": [
                                     {
-                                        "key_code": "w",
-                                        "modifiers": ["left_command", "left_shift"]
+                                        "key_code": "q",
+                                        "modifiers": ["left_command"]
                                     }
                                 ],
                                 "type": "basic"
