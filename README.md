@@ -223,6 +223,23 @@ The `duckduckgo-search` and `web-scraper` skills run as `uv` scripts with
 [PEP 723](https://peps.python.org/pep-0723/) inline dependencies — the `tools`
 module already installs `uv`, so they need no separate setup.
 
+### Claude Code settings (`claude-settings`)
+A separate always-on module (`claude_settings.py`) enforces a small set of
+**managed keys** in `~/.claude/settings.json` and leaves every other key alone.
+It does **not** symlink or own the whole file — Claude Code rewrites that file in
+place, so a symlink would clobber machine-local keys (statusline path, plugins,
+voice). Instead it merges just these keys, writing only when one is missing or
+differs:
+
+| Key | Value | Effect |
+|-----|-------|--------|
+| `outputStyle` | `"Concise"` | Concise responses |
+| `autoMemoryEnabled` | `false` | No auto-saved memory fact-files (CLAUDE.md unaffected) |
+| `cleanupPeriodDays` | `36500` | Effectively never delete old sessions (default is 30 days) |
+
+Edit `MANAGED_SETTINGS` in `claude_settings.py` to change what's enforced.
+Malformed/unreadable JSON is reported and left untouched, never clobbered.
+
 **When unset** (and CleanShot X isn't installed), `keybinds` instead binds the
 built-in macOS **"copy selected area to clipboard"** to `Option+Shift+S` — the
 Windows `Win+Shift+S` behaviour (no freeze, but zero-install). Some macOS builds
@@ -307,6 +324,8 @@ devenv-macos/
 │       ├── appstore.py          # Mac App Store apps (mas)  (order 16)
 │       ├── tools.py             # uv (Python), Claude Code  (order 20)
 │       ├── dotfiles.py          # symlinks + gitconfig      (order 30)
+│       ├── claude.py            # link Claude assets (opt-in)(order 35)
+│       ├── claude_settings.py   # managed ~/.claude settings (order 36)
 │       ├── keybinds.py          # macOS defaults + perms    (order 40)
 │       └── fileassoc.py         # default apps (duti)       (order 47)
 ├── dotfiles/
