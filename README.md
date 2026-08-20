@@ -61,7 +61,7 @@ exec zsh                    # pick up the new shell
 `gh`, `zellij`, `duti`, `mas`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`.
 
 ### Homebrew casks (`casks`)
-`ghostty`, `alt-tab`, `rectangle`, `maccy`, `claude-code`, `visual-studio-code`,
+`ghostty`, `alt-tab`, `rectangle`, `maccy`, `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`,
 `adobe-acrobat-reader`.
 `karabiner-elements` is added **only** when `DEVENV_KARABINER=1`, and
@@ -85,7 +85,10 @@ supports (`.nef`, `.cr2`/`.cr3`/`.crw`, `.arw`/`.sr2`, `.dng`, `.raf`, `.orf`,
 and retried once (LaunchServices lags right after an app is installed).
 
 ### Dev toolchain (`tools`)
-`uv` (Python package/project manager, via the Astral installer). Skip with `--skip tools`.
+`uv` (Python package/project manager, via the Astral installer) and the
+**Claude Code** CLI (via the official `curl -fsSL https://claude.ai/install.sh`
+installer — deliberately not a brew cask, so it self-updates in place; on re-run
+the module just runs `claude update`). Skip with `--skip tools`.
 
 ### macOS keyboard layer (`keybinds`)
 Ghostty App-Support dedupe (macOS loads both `~/.config` and the App-Support
@@ -302,7 +305,7 @@ devenv-macos/
 │       ├── packages.py          # brew formulae            (order 10)
 │       ├── casks.py             # brew casks / GUI apps     (order 15)
 │       ├── appstore.py          # Mac App Store apps (mas)  (order 16)
-│       ├── tools.py             # uv (Python)               (order 20)
+│       ├── tools.py             # uv (Python), Claude Code  (order 20)
 │       ├── dotfiles.py          # symlinks + gitconfig      (order 30)
 │       ├── keybinds.py          # macOS defaults + perms    (order 40)
 │       └── fileassoc.py         # default apps (duti)       (order 47)

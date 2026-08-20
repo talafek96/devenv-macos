@@ -19,7 +19,8 @@ CASKS = [
     "rectangle",            # window snapping
     "maccy",                # clipboard history manager
     # Dev
-    "claude-code",          # Claude Code CLI (cask — brew keeps it updated)
+    # Note: Claude Code is NOT a cask — the `tools` module installs it via the
+    # official curl installer (self-updating) so brew never pins/shadows it.
     "visual-studio-code",   # VS Code editor (cask installs the `code` CLI too)
     # Personal / everyday
     "google-chrome",
