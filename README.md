@@ -97,7 +97,9 @@ double-loading the config), macOS defaults (globe tap = Change Input Source, nat
 fast key repeat / press-and-hold off), **disabling macOS's `Ctrl+←/→`
 "move a space" Mission Control shortcuts** (they're grabbed system-wide and
 otherwise swallow `Ctrl+arrow` before the terminal can use it for word-jump),
-setting **Maccy's clipboard-history popup to `Option+V`** (the Windows `Win+V`
+moving the **Dictation trigger to "Press Right Command twice"** (off the default
+"Press 🌐 twice", which misfires because the Globe key is busy as the
+input-source / fn-row key), setting **Maccy's clipboard-history popup to `Option+V`** (the Windows `Win+V`
 clipboard — the Windows key sits where Option is on a Mac) and installing a
 LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
 isn't running — installing the cask alone doesn't auto-launch it), binding

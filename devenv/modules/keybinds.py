@@ -47,6 +47,17 @@ _DEFAULTS = [
 #   80 = + shift (move window left)         82 = + shift (move window right)
 _DISABLE_SYMBOLIC_HOTKEYS = [79, 80, 81, 82]
 
+# ── Dictation shortcut → "Press Right Command twice" ────────
+# macOS's default dictation trigger is "Press 🌐 (Globe) twice", which fires by
+# accident here because the Globe key is busy as our input-source switch / fn-row
+# key. Move dictation onto a double-tap of the Right Command key instead.
+# Symbolic hotkey 164, encoded exactly as System Settings writes it: a `modifier`
+# entry whose two params are the right-Command mask (1048592 = Command 0x100000
+# + right-side bit 0x10) and its negated release value (-1048593). A `modifier`
+# type carries no key params, unlike the `standard` screenshot entries above.
+_DICTATION_HOTKEY_ID = 164
+_DICTATION_HOTKEY_VALUE = "{enabled=1;value={parameters=(1048592,-1048593);type=modifier;};}"
+
 # ── Third-party app hotkeys (Windows-feel) ──────────────────
 # Maccy's clipboard-history popup → Option+V (the Windows `Win+V` clipboard,
 # with the Windows key sitting where Option is on a Mac). Maccy stores its
@@ -194,6 +205,7 @@ class KeybindsModule(Module):
         self._dedupe_ghostty_app_support(ctx)
         self._apply_macos_defaults(ctx)
         self._disable_space_switch_hotkeys(ctx)
+        self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
@@ -238,6 +250,16 @@ class KeybindsModule(Module):
         # some macOS builds to fully release from the WindowManager).
         self._activate_settings(ctx)
         ctx.ok("Disabled macOS Ctrl+←/→ space-switching (frees Ctrl+arrow for word-jump)")
+
+    # Move the Dictation trigger off "Globe twice" (the Globe key is busy as the
+    # input-source / fn-row key here) onto a double-tap of the Right Command key.
+    def _set_dictation_shortcut(self, ctx) -> None:
+        ctx.run("defaults", "write", "com.apple.symbolichotkeys",
+                "AppleSymbolicHotKeys", "-dict-add", str(_DICTATION_HOTKEY_ID),
+                _DICTATION_HOTKEY_VALUE, check=False)
+        self._activate_settings(ctx)
+        ctx.ok("Dictation shortcut set to Right Command twice "
+               "(was Globe-twice; may need a logout to fully take effect)")
 
     # Windows-feel global hotkeys for third-party apps (currently just Maccy).
     def _set_app_hotkeys(self, ctx) -> None:
