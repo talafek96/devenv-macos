@@ -8,6 +8,7 @@ them and prints what still needs a manual click.
 
 from __future__ import annotations
 
+import plistlib
 from pathlib import Path
 
 from devenv.modules import Module
@@ -109,6 +110,36 @@ _MOS_AGENT_PLIST = """\
   <key>Label</key><string>com.devenv.mos</string>
   <key>ProgramArguments</key>
   <array><string>/usr/bin/open</string><string>-a</string><string>Mos</string></array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+"""
+
+# MonitorControl drives external-monitor brightness/volume over DDC/CI from the
+# normal media keys — the piece macOS can't do for monitors it treats as
+# fixed-volume digital outputs (e.g. the Dell U3425WE's built-in speakers over
+# USB-C/DP, whose native volume slider is greyed out). Like Maccy/Mos it must be
+# running, and the cask doesn't launch it at login, so own a LaunchAgent.
+#
+# Two settings are pre-seeded (see _configure_monitorcontrol):
+#   - disableAltBrightnessKeys=true: leave the BRIGHTNESS keys native (we only
+#     want volume from it); this stops it from swallowing fn+F1/F2.
+#   - pollingMode=0 (per external display): don't READ DDC values. Apple Silicon
+#     DDC reads are unreliable and return garbage, which makes volume jump to
+#     0/max on each key; with reads off it steps from a cached value instead.
+# NOTE: still needs a one-time Accessibility grant (can't be scripted; checklist).
+_MONITORCONTROL_APP = Path("/Applications/MonitorControl.app")
+_MONITORCONTROL_DOMAIN = "app.monitorcontrol.MonitorControl"
+_MONITORCONTROL_PLIST_PATH = "Library/Preferences/app.monitorcontrol.MonitorControl.plist"
+_MONITORCONTROL_AGENT_LABEL = "com.devenv.monitorcontrol"
+_MONITORCONTROL_AGENT_PLIST = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.devenv.monitorcontrol</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>MonitorControl</string></array>
   <key>RunAtLoad</key><true/>
 </dict>
 </plist>
@@ -218,6 +249,12 @@ _PERMISSION_CHECKLIST = """\
   Mos (external-mouse scroll):
     - Grant Accessibility on first launch, or it can't reverse the wheel.
     - Reverses/smooths external mice only; the trackpad stays natural.
+  MonitorControl (external-monitor volume/brightness via DDC):
+    - Grant Accessibility on first launch, or media keys won't reach it.
+    - Only needed for monitors with a fixed/greyed volume slider (e.g. the
+      Dell U3425WE speakers over USB-C). Volume is pre-set to DDC; brightness
+      keys stay native. If wheel volume jumps to 0/max, set that display's
+      Polling to "None" (setup does this for displays it already knows).
   Function row: globe/fn is native, so the printed hardware functions work via
   fn+F1..F12 out of the box (brightness, Mission Control, media, volume, Do Not
   Disturb on F6, etc.). For fn+F5 Dictation, enable it once under System
@@ -237,6 +274,7 @@ class KeybindsModule(Module):
         self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
         self._ensure_mos_login_item(ctx)
+        self._configure_monitorcontrol(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
 
@@ -319,6 +357,49 @@ class KeybindsModule(Module):
         self._ensure_login_item(ctx, _MOS_AGENT_LABEL, _MOS_AGENT_PLIST)
         ctx.ok("Mos set to launch at login (reverses external-mouse scroll; "
                "grant it Accessibility once — see the checklist)")
+
+    # Configure MonitorControl (media keys → external-monitor DDC volume) and
+    # keep it alive at login. See the constants block for why each pref is set.
+    def _configure_monitorcontrol(self, ctx) -> None:
+        if not _MONITORCONTROL_APP.exists():
+            ctx.info("MonitorControl not installed — skipping (external monitors "
+                     "with fixed digital audio won't get media-key volume control)")
+            return
+
+        # Only volume from it — keep the brightness keys native.
+        ctx.run("defaults", "write", _MONITORCONTROL_DOMAIN,
+                "disableAltBrightnessKeys", "-bool", "true", check=False)
+
+        # Turn OFF DDC reads for every external display MonitorControl already
+        # knows about (Apple Silicon reads are flaky → volume jumps to 0/max).
+        # Per-display key, so we discover the ids from its own prefs; a fresh
+        # machine that hasn't run MonitorControl yet simply has none to set yet.
+        for display_id in self._monitorcontrol_external_display_ids(ctx):
+            ctx.run("defaults", "write", _MONITORCONTROL_DOMAIN,
+                    f"pollingMode({display_id})", "-int", "0", check=False)
+
+        self._ensure_login_item(ctx, _MONITORCONTROL_AGENT_LABEL,
+                                _MONITORCONTROL_AGENT_PLIST)
+        ctx.ok("MonitorControl set to launch at login (media keys → external "
+               "monitor volume over DDC; grant it Accessibility once — checklist)")
+
+    # Read MonitorControl's prefs plist and return the display identifiers of
+    # external monitors (those with a volume value key `value98(<id>)`, minus the
+    # built-in ColorLCD). Best-effort: returns [] if the plist is absent/unreadable.
+    def _monitorcontrol_external_display_ids(self, ctx) -> list[str]:
+        plist_path = ctx.home_dir / _MONITORCONTROL_PLIST_PATH
+        try:
+            data = plistlib.loads(plist_path.read_bytes())
+        except (OSError, plistlib.InvalidFileException):
+            return []
+        ids = set()
+        for key in data:
+            # keys look like "value98(DELLU3425WE426841539@5)"
+            if key.startswith("value98(") and key.endswith(")"):
+                display_id = key[len("value98("):-1]
+                if not display_id.startswith("ColorLCD"):
+                    ids.add(display_id)
+        return sorted(ids)
 
     # Write + (re)load a per-user LaunchAgent that re-opens an app every login.
     # Shared by Maccy and CleanShot: both expose global hotkeys that only fire
