@@ -87,14 +87,14 @@
                         ]
                     },
                     {
-                        "description": "[Intl] Option+Shift (hold ⌥ alt, tap Shift) → switch input source (Ctrl+Option+Space)",
+                        "description": "[Intl] Command+Shift (hold ⌘, tap Shift) → switch input source (Ctrl+Option+Space) · ⌘+Shift+key still = normal shortcut · all keyboards",
                         "manipulators": [
                             {
                                 "from": {
                                     "key_code": "left_shift",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": { "mandatory": ["left_command"] }
                                 },
-                                "to": [{ "key_code": "left_shift", "modifiers": ["left_option"] }],
+                                "to": [{ "key_code": "left_shift", "modifiers": ["left_command"] }],
                                 "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control", "left_option"] }],
                                 "type": "basic"
                             }
