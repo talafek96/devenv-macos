@@ -88,6 +88,32 @@ _MACCY_AGENT_PLIST = """\
 </plist>
 """
 
+# Mos reverses (and smooths) the scroll wheel on external mice while leaving the
+# trackpad natural — the per-device scroll direction macOS itself can't do (its
+# "natural scrolling" toggle is global). It only works while running and, like
+# Maccy, the cask doesn't launch it at login, so own a LaunchAgent that re-opens
+# it every login. NOTE: Mos also needs a one-time Accessibility grant (System
+# Settings → Privacy & Security → Accessibility) before it can touch scrolling —
+# that can't be scripted; the checklist covers it.
+_MOS_APP = Path("/Applications/Mos.app")
+_MOS_DOMAIN = "com.caldis.Mos"
+# Hide the menu-bar icon ("General → Hide Status Bar Icon"). Pre-seeding the pref
+# before Mos's first launch makes it read it on startup.
+_MOS_HIDE_STATUS_KEY = "hideStatusItem"
+_MOS_AGENT_LABEL = "com.devenv.mos"
+_MOS_AGENT_PLIST = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.devenv.mos</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>Mos</string></array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+"""
+
 # ── Screenshot hotkey → Option+Shift+S ──────────────────────
 # CleanShot X (opt-in, DEVENV_CLEANSHOT) is the preferred capture app — it can
 # FREEZE the screen so you can frame the shot. Its capture shortcut is set in
@@ -189,6 +215,9 @@ _PERMISSION_CHECKLIST = """\
     - Grant Accessibility on first launch.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
+  Mos (external-mouse scroll):
+    - Grant Accessibility on first launch, or it can't reverse the wheel.
+    - Reverses/smooths external mice only; the trackpad stays natural.
   Function row: globe/fn is native, so the printed hardware functions work via
   fn+F1..F12 out of the box (brightness, Mission Control, media, volume, Do Not
   Disturb on F6, etc.). For fn+F5 Dictation, enable it once under System
@@ -207,6 +236,7 @@ class KeybindsModule(Module):
         self._disable_space_switch_hotkeys(ctx)
         self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
+        self._ensure_mos_login_item(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
 
@@ -275,6 +305,20 @@ class KeybindsModule(Module):
             return
         self._ensure_login_item(ctx, _MACCY_AGENT_LABEL, _MACCY_AGENT_PLIST)
         ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
+
+    # Keep Mos alive across logins so external-mouse scroll stays reversed.
+    def _ensure_mos_login_item(self, ctx) -> None:
+        if not _MOS_APP.exists():
+            ctx.info("Mos not installed — skipping its login item (external-mouse "
+                     "scroll will follow the global 'natural scrolling' setting)")
+            return
+        # Hide the menu-bar icon (General → Hide Status Bar Icon). Set before the
+        # login item (re)launches Mos so it's read on startup.
+        ctx.run("defaults", "write", _MOS_DOMAIN, _MOS_HIDE_STATUS_KEY,
+                "-bool", "true", check=False)
+        self._ensure_login_item(ctx, _MOS_AGENT_LABEL, _MOS_AGENT_PLIST)
+        ctx.ok("Mos set to launch at login (reverses external-mouse scroll; "
+               "grant it Accessibility once — see the checklist)")
 
     # Write + (re)load a per-user LaunchAgent that re-opens an app every login.
     # Shared by Maccy and CleanShot: both expose global hotkeys that only fire

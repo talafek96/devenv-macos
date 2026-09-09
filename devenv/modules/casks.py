@@ -18,6 +18,7 @@ CASKS = [
     "alt-tab",              # Windows-style Alt-Tab switcher
     "rectangle",            # window snapping
     "maccy",                # clipboard history manager
+    "mos",                  # reverse + smooth external-mouse scroll (trackpad untouched)
     # Dev
     # Note: Claude Code is NOT a cask — the `tools` module installs it via the
     # official curl installer (self-updating) so brew never pins/shadows it.

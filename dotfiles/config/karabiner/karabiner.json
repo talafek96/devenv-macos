@@ -11,6 +11,69 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "[External kbd] Swap ⌘/⌥ — Win→Option, Alt→Command (external keyboards only, never built-in)",
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "type": "device_unless",
+                                        "identifiers": [{ "is_built_in_keyboard": true }]
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "left_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "parameters": { "basic.to_if_alone_timeout_milliseconds": 400 },
+                                "to": [{ "key_code": "left_option" }],
+                                "to_if_alone": [{ "shell_command": "open /System/Applications/Apps.app" }],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "type": "device_unless",
+                                        "identifiers": [{ "is_built_in_keyboard": true }]
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "left_option",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "key_code": "left_command" }],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "type": "device_unless",
+                                        "identifiers": [{ "is_built_in_keyboard": true }]
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "right_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "key_code": "right_option" }],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "type": "device_unless",
+                                        "identifiers": [{ "is_built_in_keyboard": true }]
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "right_option",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "key_code": "right_command" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "[Base][Disable] Caps Lock → nothing",
                         "manipulators": [
                             {
@@ -1599,18 +1662,7 @@
                     }
                 ]
             },
-            "devices": [
-                {
-                    "identifiers": {
-                        "is_pointing_device": true,
-                        "product_id": 45105,
-                        "vendor_id": 1133
-                    },
-                    "ignore": false,
-                    "ignore_vendor_events": true,
-                    "mouse_flip_vertical_wheel": true
-                }
-            ],
+            "devices": [],
             "fn_function_keys": [],
             "name": "Default profile",
             "selected": true,
