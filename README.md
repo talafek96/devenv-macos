@@ -351,3 +351,21 @@ devenv-macos/
 ```bash
 make check    # shellcheck + py_compile + module discovery + karabiner.json validation
 ```
+
+## Versions
+
+Annotated git tags mark proven-working revisions (roll back with
+`git checkout <tag>`):
+
+- **v1.1.0** — Consolidated **AltTab** (app switcher), **Rectangle** (window
+  snapping) and **Mos** (external-mouse scroll invert) into the single
+  **Vorssaint** menu-bar toolkit, plus its per-app volume mixer. Vorssaint's
+  modules, settings and Rectangle-style snap shortcuts (halves `⌃⌥`+arrows,
+  corners `⌃⌥U/I/J/K`, thirds `⌃⌥D/F/G`, maximize `⌃⌥↩`, center `⌃⌥C`) are
+  scripted via `defaults` — only the Accessibility grant stays manual.
+  MonitorControl, Karabiner, CleanShot X and Maccy were kept (Vorssaint can't
+  cover DDC monitor *volume*, per-keyboard remapping, or replace the preferred
+  screenshot/clipboard apps).
+- **v1.0.0** — Last revision before the Vorssaint migration: AltTab + Rectangle +
+  Mos as separate apps, alongside MonitorControl (media-key → external-monitor
+  DDC volume) and the Karabiner Windows-feel keymap.
