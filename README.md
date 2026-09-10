@@ -109,7 +109,7 @@ clipboard — the Windows key sits where Option is on a Mac) and installing a
 LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
 isn't running — installing the cask alone doesn't auto-launch it), keeping
 **Vorssaint** (menu-bar toolkit — app switcher, window snapping, scroll-invert,
-volume mixer; modules toggled in-app) and
+volume mixer; modules pre-enabled via `defaults`, Accessibility granted by hand) and
 **MonitorControl** (external-monitor DDC volume — brightness keys left native,
 DDC reads off for external displays to avoid Apple-Silicon 0/max jumps) alive at
 login the same way, binding
