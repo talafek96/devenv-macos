@@ -65,8 +65,9 @@ exec zsh                    # pick up the new shell
 `ghostty`, `maccy`, `monitorcontrol` (media keys → external-monitor
 brightness/volume over DDC), `vorssaint` (all-in-one menu-bar toolkit — its
 modules replace **AltTab** (app switcher), **Rectangle** (window snapping) and
-**Mos** (external-mouse scroll invert), and add a per-app volume mixer; enabled
-in-app), `visual-studio-code`,
+**Mos** (external-mouse scroll invert), and add a per-app volume mixer; modules,
+settings and snap shortcuts are pre-enabled by setup via `defaults`, only the
+Accessibility grant is manual), `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`,
 `adobe-acrobat-reader`.
 `karabiner-elements` is added **only** when `DEVENV_KARABINER=1`, and
