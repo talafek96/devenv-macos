@@ -15,11 +15,14 @@ from devenv.modules import Module
 CASKS = [
     # Core Windows-feel / terminal setup
     "ghostty",              # GPU terminal
-    "alt-tab",              # Windows-style Alt-Tab switcher
-    "rectangle",            # window snapping
     "maccy",                # clipboard history manager
-    "mos",                  # reverse + smooth external-mouse scroll (trackpad untouched)
-    "monitorcontrol",       # media keys → external-monitor brightness/volume via DDC/CI
+    "monitorcontrol",       # media keys → external-monitor brightness/volume via DDC
+    # Vorssaint — all-in-one menu-bar toolkit. Replaces alt-tab (app switcher),
+    # rectangle (window snapping), and mos (scroll-direction invert). Its modules
+    # are enabled in-app (can't be scripted) — see the checklist. NOTE: it does
+    # NOT do external-monitor DDC *volume*, so MonitorControl stays; and it can't
+    # replace Karabiner's per-keyboard remapping. CleanShot X is kept on purpose.
+    "vorssaint",
     # Dev
     # Note: Claude Code is NOT a cask — the `tools` module installs it via the
     # official curl installer (self-updating) so brew never pins/shadows it.

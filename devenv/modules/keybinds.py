@@ -89,36 +89,119 @@ _MACCY_AGENT_PLIST = """\
 </plist>
 """
 
-# Mos reverses (and smooths) the scroll wheel on external mice while leaving the
-# trackpad natural — the per-device scroll direction macOS itself can't do (its
-# "natural scrolling" toggle is global). It only works while running and, like
-# Maccy, the cask doesn't launch it at login, so own a LaunchAgent that re-opens
-# it every login. NOTE: Mos also needs a one-time Accessibility grant (System
-# Settings → Privacy & Security → Accessibility) before it can touch scrolling —
-# that can't be scripted; the checklist covers it.
-_MOS_APP = Path("/Applications/Mos.app")
-_MOS_DOMAIN = "com.caldis.Mos"
-# Hide the menu-bar icon ("General → Hide Status Bar Icon"). Pre-seeding the pref
-# before Mos's first launch makes it read it on startup.
-_MOS_HIDE_STATUS_KEY = "hideStatusItem"
-_MOS_AGENT_LABEL = "com.devenv.mos"
-_MOS_AGENT_PLIST = """\
+# Vorssaint is an all-in-one menu-bar toolkit that replaces several single-purpose
+# apps at once: its modules cover the app switcher (was AltTab), window snapping
+# (was Rectangle), and scroll-direction invert for external mice (was Mos), plus
+# extras (per-app volume mixer, system monitors, keep-awake, …).
+# NOTE: Vorssaint does NOT control external-monitor DDC *volume*, so
+# MonitorControl stays; and it can't replace Karabiner's per-keyboard remapping.
+_VORSSAINT_APP = Path("/Applications/Vorssaint.app")
+_VORSSAINT_DOMAIN = "com.vorssaint.utils"
+_VORSSAINT_AGENT_LABEL = "com.devenv.vorssaint"
+_VORSSAINT_AGENT_PLIST = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.devenv.mos</string>
+  <key>Label</key><string>com.devenv.vorssaint</string>
   <key>ProgramArguments</key>
-  <array><string>/usr/bin/open</string><string>-a</string><string>Mos</string></array>
+  <array><string>/usr/bin/open</string><string>-a</string><string>Vorssaint</string></array>
   <key>RunAtLoad</key><true/>
 </dict>
 </plist>
 """
 
+# Vorssaint's module state IS scriptable via `defaults`, with two caveats we
+# handle below:
+#   1. It re-derives module state during first-run onboarding, so writes only
+#      stick once `hasOnboarded=1` (+ the onboarding version/step) is also set.
+#      We seed those first so the feature flags below aren't clobbered on launch.
+#   2. Each module has an availability flag `featureAvailable.<name>` AND some
+#      have a separate on-switch `<name>Enabled`. We set both where they exist.
+# Best-effort + opaque/version-specific: these keys were reverse-engineered from
+# Vorssaint 3.3.5 by diffing its prefs before/after enabling modules by hand. A
+# future version may rename them — if a module doesn't come up, enable it in-app
+# (the checklist covers that) and re-capture. Cosmetic keys (icon tint, window
+# size) are deliberately left out.
+_VORSSAINT_ONBOARDING = {
+    "hasOnboarded": ("-bool", "true"),
+    "featuresOnboardingVersion": ("-int", "4"),
+    "onboardingStep": ("-int", "0"),
+}
+# Modules to mark available (featureAvailable.<name>=1). The 4 core replacements
+# (switcher, windowLayout, scrollInverter, mixer) plus the extras enabled on this
+# setup. Trim this list to change what a fresh machine turns on.
+_VORSSAINT_MODULES = (
+    "switcher", "windowLayout", "scrollInverter", "mixer",   # core replacements
+    "dockClick", "dockPreview", "extraBrightness", "finderCutPaste",
+    "finderRename", "middleClick", "uninstaller", "urlCleaner",  # extras
+    "keepAwake", "monitorCPU", "monitorDisk", "monitorGPU",
+    "monitorMemory", "monitorNetwork", "monitorPower",       # default-on, explicit
+)
+# Per-module on-switches / settings that exist alongside the availability flag,
+# captured from the hand-tuned setup. Cosmetic/transient keys (window size, icon
+# tint, *Migrated / *IntroVersion flags, empty shelf) are intentionally omitted,
+# as are clipboard-* keys (that module is off — Maccy owns clipboard history).
+_VORSSAINT_SETTINGS = {
+    # scroll invert (was Mos): vertical + horizontal
+    "scrollInverterEnabled": ("-bool", "true"),
+    "scrollInverterHorizontalEnabled": ("-bool", "true"),
+    # dock preview + click-to-hide
+    "dockPreviewEnabled": ("-bool", "true"),
+    "dockClickHide": ("-bool", "true"),
+    "dockClickMinimize": ("-bool", "false"),
+    # finder cut/paste, middle-click (3-finger), URL cleaner
+    "finderCutPasteEnabled": ("-bool", "true"),
+    "middleClickEnabled": ("-bool", "true"),
+    "middleClickTapFingers": ("-int", "3"),
+    "urlCleanerEnabled": ("-bool", "true"),
+    # window snapping shortcuts master switch (individual binds below)
+    "windowLayoutShortcutsEnabled": ("-bool", "true"),
+    # system monitors: appearance, sampling, and alert thresholds
+    "menuBarMetricAppearance": ("-string", "values"),
+    "monitorMemoryMetric": ("-string", "used"),
+    "monitorIntervalSeconds": ("-int", "2"),
+    "monitorPwrTemperature": ("-bool", "true"),
+    "monitorAlertCPUThreshold": ("-int", "90"),
+    "monitorAlertCPUTemperatureThreshold": ("-int", "90"),
+    "monitorAlertBatteryPercent": ("-int", "15"),
+    "monitorAlertBatteryTemperatureThreshold": ("-int", "40"),
+    "monitorAlertDiskFreePercent": ("-int", "10"),
+    "monitorAlertCooldownMinutes": ("-int", "15"),
+    "batteryLimitPercent": ("-int", "10"),
+}
+
+# Rectangle-style window-snap shortcuts. Format is "<modifiers>:<keycode>" where
+# keycode is the macOS virtual key code (arrows ←123 →124 ↓125 ↑126; letters
+# D2 F3 G5 C8 E14 T17 U32 I34 J38 K40; Return36 Delete51; F11=103). Modifier is
+# Ctrl+Option (= Win+Ctrl on the external keyboard) so it never clashes with the
+# ⌥+arrow "move by word" text shortcut. Displays use Ctrl+Option+Command.
+_VORSSAINT_SHORTCUTS = {
+    "windowLayoutShortcutLeft": "control+option:123",          # ⌃⌥←  left half
+    "windowLayoutShortcutRight": "control+option:124",         # ⌃⌥→  right half
+    "windowLayoutShortcutTop": "control+option:126",           # ⌃⌥↑  top half
+    "windowLayoutShortcutBottom": "control+option:125",        # ⌃⌥↓  bottom half
+    "windowLayoutShortcutMaximize": "control+option:36",       # ⌃⌥↩  maximize
+    "windowLayoutShortcutFullScreen": "control+option:103",    # ⌃⌥F11 native full screen
+    "windowLayoutShortcutCenter": "control+option:8",          # ⌃⌥C  center
+    "windowLayoutShortcutRestore": "control+option:51",        # ⌃⌥⌫  restore
+    "windowLayoutShortcutLeftThird": "control+option:2",       # ⌃⌥D
+    "windowLayoutShortcutCenterThird": "control+option:3",     # ⌃⌥F
+    "windowLayoutShortcutRightThird": "control+option:5",      # ⌃⌥G
+    "windowLayoutShortcutLeftTwoThirds": "control+option:14",  # ⌃⌥E
+    "windowLayoutShortcutRightTwoThirds": "control+option:17", # ⌃⌥T
+    "windowLayoutShortcutTopLeft": "control+option:32",        # ⌃⌥U
+    "windowLayoutShortcutTopRight": "control+option:34",       # ⌃⌥I
+    "windowLayoutShortcutBottomLeft": "control+option:38",     # ⌃⌥J
+    "windowLayoutShortcutBottomRight": "control+option:40",    # ⌃⌥K
+    "windowLayoutShortcutNextDisplay": "control+option+command:124",      # ⌃⌥⌘→
+    "windowLayoutShortcutPreviousDisplay": "control+option+command:123",  # ⌃⌥⌘←
+}
+
 # MonitorControl drives external-monitor brightness/volume over DDC/CI from the
 # normal media keys — the piece macOS can't do for monitors it treats as
 # fixed-volume digital outputs (e.g. the Dell U3425WE's built-in speakers over
-# USB-C/DP, whose native volume slider is greyed out). Like Maccy/Mos it must be
+# USB-C/DP, whose native volume slider is greyed out). Like Maccy it must be
 # running, and the cask doesn't launch it at login, so own a LaunchAgent.
 #
 # Two settings are pre-seeded (see _configure_monitorcontrol):
@@ -239,16 +322,26 @@ _CLEANSHOT_CHECKLIST = """\
 """
 
 _PERMISSION_CHECKLIST = """\
-  AltTab:
-    - Grant Accessibility on first launch.
-    - Controls → set the Hold shortcut to Command (so your Alt = Command opens it).
-  Rectangle:
-    - Grant Accessibility on first launch.
+  Vorssaint (menu-bar toolkit — replaces AltTab, Rectangle, and Mos):
+    - Grant Accessibility on first launch — REQUIRED, and the one thing setup
+      can't do for you. Without it the switcher, window snapping, and
+      scroll-invert stay dead. (System Settings → Privacy & Security →
+      Accessibility → enable Vorssaint.)
+    - Modules are pre-enabled by setup (switcher, window snapping, scroll-invert,
+      per-app volume mixer, + extras). If any didn't come up — e.g. on a fresh
+      machine where a module needs a one-time download — open Settings and
+      toggle it on there; the setup keys match a recent Vorssaint version and a
+      newer one may have renamed them.
+    - App switcher: if ⌘Tab-hold doesn't feel right, set its Hold key to Command
+      in Settings (your external Alt = ⌘).
+    - Window snapping uses Rectangle-style shortcuts, pre-set by setup:
+      halves ⌃⌥←/→/↑/↓, corners ⌃⌥U/I/J/K, thirds ⌃⌥D/F/G, maximize ⌃⌥↩,
+      center ⌃⌥C (⌃⌥ = Win+Ctrl on the external keyboard, so ⌥+arrow word-jump
+      still works).
+    - Kept alive at login by the com.devenv.vorssaint LaunchAgent; you can also
+      flip Vorssaint's own "start at login" as a backup.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
-  Mos (external-mouse scroll):
-    - Grant Accessibility on first launch, or it can't reverse the wheel.
-    - Reverses/smooths external mice only; the trackpad stays natural.
   MonitorControl (external-monitor volume/brightness via DDC):
     - Grant Accessibility on first launch, or media keys won't reach it.
     - Only needed for monitors with a fixed/greyed volume slider (e.g. the
@@ -273,7 +366,7 @@ class KeybindsModule(Module):
         self._disable_space_switch_hotkeys(ctx)
         self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
-        self._ensure_mos_login_item(ctx)
+        self._ensure_vorssaint_login_item(ctx)
         self._configure_monitorcontrol(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
@@ -344,19 +437,34 @@ class KeybindsModule(Module):
         self._ensure_login_item(ctx, _MACCY_AGENT_LABEL, _MACCY_AGENT_PLIST)
         ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
 
-    # Keep Mos alive across logins so external-mouse scroll stays reversed.
-    def _ensure_mos_login_item(self, ctx) -> None:
-        if not _MOS_APP.exists():
-            ctx.info("Mos not installed — skipping its login item (external-mouse "
-                     "scroll will follow the global 'natural scrolling' setting)")
+    # Configure Vorssaint's modules (best-effort, via defaults) and keep it alive
+    # across logins. Accessibility still has to be granted by hand (see checklist).
+    def _ensure_vorssaint_login_item(self, ctx) -> None:
+        if not _VORSSAINT_APP.exists():
+            ctx.info("Vorssaint not installed — skipping (app switcher / window "
+                     "snapping / scroll-invert / volume mixer won't be available)")
             return
-        # Hide the menu-bar icon (General → Hide Status Bar Icon). Set before the
-        # login item (re)launches Mos so it's read on startup.
-        ctx.run("defaults", "write", _MOS_DOMAIN, _MOS_HIDE_STATUS_KEY,
-                "-bool", "true", check=False)
-        self._ensure_login_item(ctx, _MOS_AGENT_LABEL, _MOS_AGENT_PLIST)
-        ctx.ok("Mos set to launch at login (reverses external-mouse scroll; "
-               "grant it Accessibility once — see the checklist)")
+
+        # Quit first so our writes aren't overwritten by a running instance on
+        # exit, then seed onboarding flags BEFORE the module flags (otherwise a
+        # first launch re-runs onboarding and resets them), then the modules.
+        ctx.run("osascript", "-e", 'quit app "Vorssaint"', check=False)
+        for key, (vtype, value) in _VORSSAINT_ONBOARDING.items():
+            ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, vtype, value, check=False)
+        for mod in _VORSSAINT_MODULES:
+            ctx.run("defaults", "write", _VORSSAINT_DOMAIN,
+                    f"featureAvailable.{mod}", "-int", "1", check=False)
+        for key, (vtype, value) in _VORSSAINT_SETTINGS.items():
+            ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, vtype, value, check=False)
+        for key, value in _VORSSAINT_SHORTCUTS.items():
+            ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, "-string", value, check=False)
+        ctx.ok(f"Vorssaint configured ({len(_VORSSAINT_MODULES)} modules + "
+               f"{len(_VORSSAINT_SHORTCUTS)} Rectangle-style snap shortcuts: "
+               "switcher, window snapping, scroll-invert, volume mixer, +extras)")
+
+        self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST)
+        ctx.ok("Vorssaint set to launch at login — grant it Accessibility once "
+               "(see the checklist) or the switcher/snapping/scroll won't work")
 
     # Configure MonitorControl (media keys → external-monitor DDC volume) and
     # keep it alive at login. See the constants block for why each pref is set.
