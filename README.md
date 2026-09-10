@@ -62,9 +62,11 @@ exec zsh                    # pick up the new shell
 `m1ddc` (DDC/CI control for external monitors on Apple Silicon).
 
 ### Homebrew casks (`casks`)
-`ghostty`, `alt-tab`, `rectangle`, `maccy`, `mos` (reverse external-mouse scroll
-while the trackpad stays natural), `monitorcontrol` (media keys → external-monitor
-brightness/volume over DDC), `visual-studio-code`,
+`ghostty`, `maccy`, `monitorcontrol` (media keys → external-monitor
+brightness/volume over DDC), `vorssaint` (all-in-one menu-bar toolkit — its
+modules replace **AltTab** (app switcher), **Rectangle** (window snapping) and
+**Mos** (external-mouse scroll invert), and add a per-app volume mixer; enabled
+in-app), `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`,
 `adobe-acrobat-reader`.
 `karabiner-elements` is added **only** when `DEVENV_KARABINER=1`, and
@@ -106,7 +108,8 @@ input-source / fn-row key), setting **Maccy's clipboard-history popup to `Option
 clipboard — the Windows key sits where Option is on a Mac) and installing a
 LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
 isn't running — installing the cask alone doesn't auto-launch it), keeping
-**Mos** (external-mouse scroll reversal, menu-bar icon hidden) and
+**Vorssaint** (menu-bar toolkit — app switcher, window snapping, scroll-invert,
+volume mixer; modules toggled in-app) and
 **MonitorControl** (external-monitor DDC volume — brightness keys left native,
 DDC reads off for external displays to avoid Apple-Silicon 0/max jumps) alive at
 login the same way, binding
@@ -114,7 +117,7 @@ login the same way, binding
 opted in / installed, otherwise the built-in macOS "copy selected area to
 clipboard"; see [CleanShot X is opt-in](#cleanshot-x-is-opt-in)),
 plus a printed checklist of the one-time
-GUI permission grants that can't be scripted (AltTab / Rectangle / Mos /
+GUI permission grants that can't be scripted (Vorssaint / Maccy /
 MonitorControl, and — when opted in — Karabiner).
 
 ### Karabiner is opt-in

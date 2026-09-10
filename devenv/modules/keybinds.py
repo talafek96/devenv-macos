@@ -89,27 +89,25 @@ _MACCY_AGENT_PLIST = """\
 </plist>
 """
 
-# Mos reverses (and smooths) the scroll wheel on external mice while leaving the
-# trackpad natural — the per-device scroll direction macOS itself can't do (its
-# "natural scrolling" toggle is global). It only works while running and, like
-# Maccy, the cask doesn't launch it at login, so own a LaunchAgent that re-opens
-# it every login. NOTE: Mos also needs a one-time Accessibility grant (System
-# Settings → Privacy & Security → Accessibility) before it can touch scrolling —
-# that can't be scripted; the checklist covers it.
-_MOS_APP = Path("/Applications/Mos.app")
-_MOS_DOMAIN = "com.caldis.Mos"
-# Hide the menu-bar icon ("General → Hide Status Bar Icon"). Pre-seeding the pref
-# before Mos's first launch makes it read it on startup.
-_MOS_HIDE_STATUS_KEY = "hideStatusItem"
-_MOS_AGENT_LABEL = "com.devenv.mos"
-_MOS_AGENT_PLIST = """\
+# Vorssaint is an all-in-one menu-bar toolkit that replaces several single-purpose
+# apps at once: its modules cover the app switcher (was AltTab), window snapping
+# (was Rectangle), and scroll-direction invert for external mice (was Mos), plus
+# extras we opt into in-app (e.g. the per-app volume mixer). Which modules are on
+# is configured INSIDE the app and can't be scripted — the checklist lists what
+# to enable and the one-time Accessibility grant. Here we just keep it alive at
+# login (the cask doesn't auto-launch it), same pattern as Maccy.
+# NOTE: Vorssaint does NOT control external-monitor DDC *volume*, so
+# MonitorControl stays; and it can't replace Karabiner's per-keyboard remapping.
+_VORSSAINT_APP = Path("/Applications/Vorssaint.app")
+_VORSSAINT_AGENT_LABEL = "com.devenv.vorssaint"
+_VORSSAINT_AGENT_PLIST = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.devenv.mos</string>
+  <key>Label</key><string>com.devenv.vorssaint</string>
   <key>ProgramArguments</key>
-  <array><string>/usr/bin/open</string><string>-a</string><string>Mos</string></array>
+  <array><string>/usr/bin/open</string><string>-a</string><string>Vorssaint</string></array>
   <key>RunAtLoad</key><true/>
 </dict>
 </plist>
@@ -118,7 +116,7 @@ _MOS_AGENT_PLIST = """\
 # MonitorControl drives external-monitor brightness/volume over DDC/CI from the
 # normal media keys — the piece macOS can't do for monitors it treats as
 # fixed-volume digital outputs (e.g. the Dell U3425WE's built-in speakers over
-# USB-C/DP, whose native volume slider is greyed out). Like Maccy/Mos it must be
+# USB-C/DP, whose native volume slider is greyed out). Like Maccy it must be
 # running, and the cask doesn't launch it at login, so own a LaunchAgent.
 #
 # Two settings are pre-seeded (see _configure_monitorcontrol):
@@ -239,16 +237,20 @@ _CLEANSHOT_CHECKLIST = """\
 """
 
 _PERMISSION_CHECKLIST = """\
-  AltTab:
-    - Grant Accessibility on first launch.
-    - Controls → set the Hold shortcut to Command (so your Alt = Command opens it).
-  Rectangle:
-    - Grant Accessibility on first launch.
+  Vorssaint (menu-bar toolkit — replaces AltTab, Rectangle, and Mos):
+    - Grant Accessibility on first launch (needed for the switcher, window
+      snapping, and scroll-invert).
+    - Enable these modules in-app (Settings → toggle each on):
+        * App switcher  — the ⌘Tab replacement (was AltTab). Set its Hold key to
+          Command so your external Alt (= ⌘) opens it.
+        * Window layout — halves/thirds/corners snapping (was Rectangle).
+        * Scroll direction — invert the wheel; leaves the trackpad natural
+          (was Mos). Make sure Mos is NOT also running, or they double-invert.
+        * Volume mixer  — per-app output volume + boost (new).
+    - Kept alive at login by the com.devenv.vorssaint LaunchAgent; you can also
+      flip Vorssaint's own "start at login" as a backup.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
-  Mos (external-mouse scroll):
-    - Grant Accessibility on first launch, or it can't reverse the wheel.
-    - Reverses/smooths external mice only; the trackpad stays natural.
   MonitorControl (external-monitor volume/brightness via DDC):
     - Grant Accessibility on first launch, or media keys won't reach it.
     - Only needed for monitors with a fixed/greyed volume slider (e.g. the
@@ -273,7 +275,7 @@ class KeybindsModule(Module):
         self._disable_space_switch_hotkeys(ctx)
         self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
-        self._ensure_mos_login_item(ctx)
+        self._ensure_vorssaint_login_item(ctx)
         self._configure_monitorcontrol(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
@@ -344,19 +346,16 @@ class KeybindsModule(Module):
         self._ensure_login_item(ctx, _MACCY_AGENT_LABEL, _MACCY_AGENT_PLIST)
         ctx.ok("Maccy set to launch at login (its Option+V hotkey needs it running)")
 
-    # Keep Mos alive across logins so external-mouse scroll stays reversed.
-    def _ensure_mos_login_item(self, ctx) -> None:
-        if not _MOS_APP.exists():
-            ctx.info("Mos not installed — skipping its login item (external-mouse "
-                     "scroll will follow the global 'natural scrolling' setting)")
+    # Keep Vorssaint (menu-bar toolkit: switcher, snapping, scroll-invert, volume
+    # mixer, …) alive across logins. Its modules are toggled in-app; see checklist.
+    def _ensure_vorssaint_login_item(self, ctx) -> None:
+        if not _VORSSAINT_APP.exists():
+            ctx.info("Vorssaint not installed — skipping its login item (app "
+                     "switcher / window snapping / scroll-invert won't be available)")
             return
-        # Hide the menu-bar icon (General → Hide Status Bar Icon). Set before the
-        # login item (re)launches Mos so it's read on startup.
-        ctx.run("defaults", "write", _MOS_DOMAIN, _MOS_HIDE_STATUS_KEY,
-                "-bool", "true", check=False)
-        self._ensure_login_item(ctx, _MOS_AGENT_LABEL, _MOS_AGENT_PLIST)
-        ctx.ok("Mos set to launch at login (reverses external-mouse scroll; "
-               "grant it Accessibility once — see the checklist)")
+        self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST)
+        ctx.ok("Vorssaint set to launch at login (enable its modules in-app + "
+               "grant Accessibility once — see the checklist)")
 
     # Configure MonitorControl (media keys → external-monitor DDC volume) and
     # keep it alive at login. See the constants block for why each pref is set.
