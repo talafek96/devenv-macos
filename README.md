@@ -128,6 +128,10 @@ permission checklist) is **not installed by default** — nobody who just wants
 the terminal + tooling is forced into a system-wide keyboard remapper. Enable
 it by setting the `DEVENV_KARABINER` environment variable before setup:
 
+> **Keymap reference:** every mapping (Windows-style editing, window management,
+> caret navigation, terminal, browser, Jump Desktop) is documented in
+> [`dotfiles/config/karabiner/README.md`](dotfiles/config/karabiner/README.md).
+
 ```bash
 DEVENV_KARABINER=1 ./setup.sh            # full setup, with the Karabiner keymap
 DEVENV_KARABINER=1 ./setup.sh --only casks,dotfiles,keybinds   # just the keymap bits
