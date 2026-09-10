@@ -138,16 +138,64 @@ _VORSSAINT_MODULES = (
     "keepAwake", "monitorCPU", "monitorDisk", "monitorGPU",
     "monitorMemory", "monitorNetwork", "monitorPower",       # default-on, explicit
 )
-# Per-module on-switches / settings that exist alongside the availability flag.
+# Per-module on-switches / settings that exist alongside the availability flag,
+# captured from the hand-tuned setup. Cosmetic/transient keys (window size, icon
+# tint, *Migrated / *IntroVersion flags, empty shelf) are intentionally omitted,
+# as are clipboard-* keys (that module is off — Maccy owns clipboard history).
 _VORSSAINT_SETTINGS = {
+    # scroll invert (was Mos): vertical + horizontal
     "scrollInverterEnabled": ("-bool", "true"),
     "scrollInverterHorizontalEnabled": ("-bool", "true"),
+    # dock preview + click-to-hide
     "dockPreviewEnabled": ("-bool", "true"),
     "dockClickHide": ("-bool", "true"),
     "dockClickMinimize": ("-bool", "false"),
+    # finder cut/paste, middle-click (3-finger), URL cleaner
     "finderCutPasteEnabled": ("-bool", "true"),
     "middleClickEnabled": ("-bool", "true"),
+    "middleClickTapFingers": ("-int", "3"),
+    "urlCleanerEnabled": ("-bool", "true"),
+    # window snapping shortcuts master switch (individual binds below)
+    "windowLayoutShortcutsEnabled": ("-bool", "true"),
+    # system monitors: appearance, sampling, and alert thresholds
+    "menuBarMetricAppearance": ("-string", "values"),
+    "monitorMemoryMetric": ("-string", "used"),
+    "monitorIntervalSeconds": ("-int", "2"),
     "monitorPwrTemperature": ("-bool", "true"),
+    "monitorAlertCPUThreshold": ("-int", "90"),
+    "monitorAlertCPUTemperatureThreshold": ("-int", "90"),
+    "monitorAlertBatteryPercent": ("-int", "15"),
+    "monitorAlertBatteryTemperatureThreshold": ("-int", "40"),
+    "monitorAlertDiskFreePercent": ("-int", "10"),
+    "monitorAlertCooldownMinutes": ("-int", "15"),
+    "batteryLimitPercent": ("-int", "10"),
+}
+
+# Rectangle-style window-snap shortcuts. Format is "<modifiers>:<keycode>" where
+# keycode is the macOS virtual key code (arrows ←123 →124 ↓125 ↑126; letters
+# D2 F3 G5 C8 E14 T17 U32 I34 J38 K40; Return36 Delete51; F11=103). Modifier is
+# Ctrl+Option (= Win+Ctrl on the external keyboard) so it never clashes with the
+# ⌥+arrow "move by word" text shortcut. Displays use Ctrl+Option+Command.
+_VORSSAINT_SHORTCUTS = {
+    "windowLayoutShortcutLeft": "control+option:123",          # ⌃⌥←  left half
+    "windowLayoutShortcutRight": "control+option:124",         # ⌃⌥→  right half
+    "windowLayoutShortcutTop": "control+option:126",           # ⌃⌥↑  top half
+    "windowLayoutShortcutBottom": "control+option:125",        # ⌃⌥↓  bottom half
+    "windowLayoutShortcutMaximize": "control+option:36",       # ⌃⌥↩  maximize
+    "windowLayoutShortcutFullScreen": "control+option:103",    # ⌃⌥F11 native full screen
+    "windowLayoutShortcutCenter": "control+option:8",          # ⌃⌥C  center
+    "windowLayoutShortcutRestore": "control+option:51",        # ⌃⌥⌫  restore
+    "windowLayoutShortcutLeftThird": "control+option:2",       # ⌃⌥D
+    "windowLayoutShortcutCenterThird": "control+option:3",     # ⌃⌥F
+    "windowLayoutShortcutRightThird": "control+option:5",      # ⌃⌥G
+    "windowLayoutShortcutLeftTwoThirds": "control+option:14",  # ⌃⌥E
+    "windowLayoutShortcutRightTwoThirds": "control+option:17", # ⌃⌥T
+    "windowLayoutShortcutTopLeft": "control+option:32",        # ⌃⌥U
+    "windowLayoutShortcutTopRight": "control+option:34",       # ⌃⌥I
+    "windowLayoutShortcutBottomLeft": "control+option:38",     # ⌃⌥J
+    "windowLayoutShortcutBottomRight": "control+option:40",    # ⌃⌥K
+    "windowLayoutShortcutNextDisplay": "control+option+command:124",      # ⌃⌥⌘→
+    "windowLayoutShortcutPreviousDisplay": "control+option+command:123",  # ⌃⌥⌘←
 }
 
 # MonitorControl drives external-monitor brightness/volume over DDC/CI from the
@@ -286,6 +334,10 @@ _PERMISSION_CHECKLIST = """\
       newer one may have renamed them.
     - App switcher: if ⌘Tab-hold doesn't feel right, set its Hold key to Command
       in Settings (your external Alt = ⌘).
+    - Window snapping uses Rectangle-style shortcuts, pre-set by setup:
+      halves ⌃⌥←/→/↑/↓, corners ⌃⌥U/I/J/K, thirds ⌃⌥D/F/G, maximize ⌃⌥↩,
+      center ⌃⌥C (⌃⌥ = Win+Ctrl on the external keyboard, so ⌥+arrow word-jump
+      still works).
     - Kept alive at login by the com.devenv.vorssaint LaunchAgent; you can also
       flip Vorssaint's own "start at login" as a backup.
   Maccy (clipboard history):
@@ -404,7 +456,10 @@ class KeybindsModule(Module):
                     f"featureAvailable.{mod}", "-int", "1", check=False)
         for key, (vtype, value) in _VORSSAINT_SETTINGS.items():
             ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, vtype, value, check=False)
-        ctx.ok(f"Vorssaint modules configured ({len(_VORSSAINT_MODULES)} enabled: "
+        for key, value in _VORSSAINT_SHORTCUTS.items():
+            ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, "-string", value, check=False)
+        ctx.ok(f"Vorssaint configured ({len(_VORSSAINT_MODULES)} modules + "
+               f"{len(_VORSSAINT_SHORTCUTS)} Rectangle-style snap shortcuts: "
                "switcher, window snapping, scroll-invert, volume mixer, +extras)")
 
         self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST)
