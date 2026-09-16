@@ -149,6 +149,7 @@ _VORSSAINT_AUTOQUIT_EXCEPTIONS = (
     "com.microsoft.Outlook",     # Outlook — keeps mail syncing / notifications
     "us.zoom.xos",               # Zoom — stays open to receive calls/reminders
     "com.microsoft.OneDrive-mac",# OneDrive — keeps syncing
+    "com.google.drivefs",        # Google Drive — keeps syncing
 )
 # Per-module on-switches / settings that exist alongside the availability flag,
 # captured from the hand-tuned setup. Cosmetic/transient keys (window size, icon
