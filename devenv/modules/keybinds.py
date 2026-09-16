@@ -162,8 +162,10 @@ _VORSSAINT_SETTINGS = {
     "dockPreviewEnabled": ("-bool", "true"),
     "dockClickHide": ("-bool", "true"),
     "dockClickMinimize": ("-bool", "false"),
-    # finder cut/paste, middle-click (3-finger), URL cleaner
+    # finder cut/paste, finder rename (F2 = its default key), middle-click
+    # (3-finger), URL cleaner
     "finderCutPasteEnabled": ("-bool", "true"),
+    "finderRenameEnabled": ("-bool", "true"),
     "middleClickEnabled": ("-bool", "true"),
     "middleClickTapFingers": ("-int", "3"),
     "urlCleanerEnabled": ("-bool", "true"),
