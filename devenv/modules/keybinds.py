@@ -135,8 +135,16 @@ _VORSSAINT_MODULES = (
     "switcher", "windowLayout", "scrollInverter", "mixer",   # core replacements
     "dockClick", "dockPreview", "extraBrightness", "finderCutPaste",
     "finderRename", "middleClick", "uninstaller", "urlCleaner",  # extras
+    "autoQuit",                                              # quit app on last window close
     "keepAwake", "monitorCPU", "monitorDisk", "monitorGPU",
     "monitorMemory", "monitorNetwork", "monitorPower",       # default-on, explicit
+)
+# Auto Quit spares these apps (bundle IDs) from being quit when their last window
+# closes — they keep running in the background (notifications, seeding, etc.).
+# Vorssaint also always spares Finder itself. Add bundle IDs here to protect more.
+_VORSSAINT_AUTOQUIT_EXCEPTIONS = (
+    "com.hnc.Discord",        # Discord — stays open for notifications
+    "net.whatsapp.WhatsApp",  # WhatsApp — stays open for notifications
 )
 # Per-module on-switches / settings that exist alongside the availability flag,
 # captured from the hand-tuned setup. Cosmetic/transient keys (window size, icon
@@ -157,6 +165,9 @@ _VORSSAINT_SETTINGS = {
     "urlCleanerEnabled": ("-bool", "true"),
     # window snapping shortcuts master switch (individual binds below)
     "windowLayoutShortcutsEnabled": ("-bool", "true"),
+    # auto-quit an app when its last window closes (Windows behavior); exceptions
+    # written separately as an array (see _VORSSAINT_AUTOQUIT_EXCEPTIONS)
+    "autoQuitEnabled": ("-bool", "true"),
     # system monitors: appearance, sampling, and alert thresholds
     "menuBarMetricAppearance": ("-string", "values"),
     "monitorMemoryMetric": ("-string", "used"),
@@ -458,8 +469,13 @@ class KeybindsModule(Module):
             ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, vtype, value, check=False)
         for key, value in _VORSSAINT_SHORTCUTS.items():
             ctx.run("defaults", "write", _VORSSAINT_DOMAIN, key, "-string", value, check=False)
+        # Auto Quit exceptions (bundle IDs) — written as an array; Vorssaint adds
+        # its own Finder exception on top.
+        ctx.run("defaults", "write", _VORSSAINT_DOMAIN, "autoQuitExceptions",
+                "-array", *_VORSSAINT_AUTOQUIT_EXCEPTIONS, check=False)
         ctx.ok(f"Vorssaint configured ({len(_VORSSAINT_MODULES)} modules + "
-               f"{len(_VORSSAINT_SHORTCUTS)} Rectangle-style snap shortcuts: "
+               f"{len(_VORSSAINT_SHORTCUTS)} Rectangle-style snap shortcuts + "
+               f"auto-quit with {len(_VORSSAINT_AUTOQUIT_EXCEPTIONS)} exceptions: "
                "switcher, window snapping, scroll-invert, volume mixer, +extras)")
 
         self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST)
