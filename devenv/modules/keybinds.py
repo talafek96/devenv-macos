@@ -275,6 +275,19 @@ _CLEANSHOT_AREA_OPTION_SHIFT_S_HEX = (
 # the whole reason for choosing CleanShot over the native capture. Default it on.
 _CLEANSHOT_FREEZE_KEY = "freezeScreen"
 
+# "After capture" behavior. `afterScreenshotActions` / `afterVideoActions` are
+# INTEGER arrays of the enabled post-capture actions; [0,1] = show the Quick
+# Access Overlay AND copy to the clipboard (so the result is on the clipboard
+# immediately while the overlay still lets you decide to save/annotate).
+# `defaults` can only write STRING arrays, so these must go through `plutil
+# -json` on the plist file (verified: CleanShot keeps them as ints). Value codes
+# reverse-engineered from CleanShot 5.x by diffing prefs; a future version could
+# renumber them. `popupAskForDestinationWhenSaving` = ask where to save each time.
+_CLEANSHOT_PLIST = "Library/Preferences/pl.maketheweb.cleanshotx.plist"
+_CLEANSHOT_AFTER_CAPTURE_KEYS = ("afterScreenshotActions", "afterVideoActions")
+_CLEANSHOT_AFTER_CAPTURE_JSON = "[0,1]"  # 0 = Quick Access Overlay, 1 = Copy
+_CLEANSHOT_ASK_DESTINATION_KEY = "popupAskForDestinationWhenSaving"
+
 # CleanShot's Option+Shift+S is an IN-APP global hotkey, so CleanShot must be
 # RUNNING for it to fire — but the cask doesn't make it launch at login, so a
 # restart silently kills it and the screenshot shortcut goes dead (same failure
@@ -592,6 +605,25 @@ class KeybindsModule(Module):
             ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_FREEZE_KEY,
                     "-bool", "true", check=False)
             ctx.ok("Enabled CleanShot freeze-screen (frame the shot while paused)")
+
+        # After-capture: copy to clipboard AND show the Quick Access Overlay, plus
+        # ask where to save each time. The action arrays must be INTEGER arrays,
+        # which `defaults` can't write, so quit CleanShot (so it can't overwrite),
+        # edit the plist with `plutil -json`, and flush cfprefsd's cache.
+        ctx.run("osascript", "-e", 'quit app "CleanShot X"', check=False)
+        ctx.run("defaults", "write", _CLEANSHOT_DOMAIN, _CLEANSHOT_ASK_DESTINATION_KEY,
+                "-bool", "true", check=False)
+        plist = ctx.home_dir / _CLEANSHOT_PLIST
+        if plist.exists():
+            for key in _CLEANSHOT_AFTER_CAPTURE_KEYS:
+                ctx.run("plutil", "-replace", key, "-json",
+                        _CLEANSHOT_AFTER_CAPTURE_JSON, str(plist), check=False)
+            ctx.run("killall", "cfprefsd", check=False)
+            ctx.ok("CleanShot after-capture: copy to clipboard + Quick Access "
+                   "Overlay, and prompt for destination on save")
+        else:
+            ctx.info("CleanShot prefs not created yet — after-capture actions will "
+                     "apply on a later setup run (or set them in Settings → After Capture)")
 
         # CleanShot's Option+Shift+S only fires while CleanShot is running; keep
         # it alive across logins so the screenshot hotkey survives a restart.
