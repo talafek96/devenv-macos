@@ -74,19 +74,6 @@
                         ]
                     },
                     {
-                        "description": "[Base][Disable] Caps Lock → nothing",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "caps_lock",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "key_code": "vk_none" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "[Intl] Command+Shift (hold ⌘, tap Shift) → switch input source (Ctrl+Option+Space) · ⌘+Shift+key still = normal shortcut · all keyboards",
                         "manipulators": [
                             {
