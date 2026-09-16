@@ -143,8 +143,12 @@ _VORSSAINT_MODULES = (
 # closes — they keep running in the background (notifications, seeding, etc.).
 # Vorssaint also always spares Finder itself. Add bundle IDs here to protect more.
 _VORSSAINT_AUTOQUIT_EXCEPTIONS = (
-    "com.hnc.Discord",        # Discord — stays open for notifications
-    "net.whatsapp.WhatsApp",  # WhatsApp — stays open for notifications
+    "com.hnc.Discord",           # Discord — stays open for notifications
+    "net.whatsapp.WhatsApp",     # WhatsApp — stays open for notifications
+    "org.m0k.transmission",      # Transmission — keeps seeding/downloading
+    "com.microsoft.Outlook",     # Outlook — keeps mail syncing / notifications
+    "us.zoom.xos",               # Zoom — stays open to receive calls/reminders
+    "com.microsoft.OneDrive-mac",# OneDrive — keeps syncing
 )
 # Per-module on-switches / settings that exist alongside the availability flag,
 # captured from the hand-tuned setup. Cosmetic/transient keys (window size, icon
