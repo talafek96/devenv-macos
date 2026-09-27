@@ -136,6 +136,7 @@ _VORSSAINT_MODULES = (
     "dockClick", "dockPreview", "extraBrightness", "finderCutPaste",
     "finderRename", "middleClick", "uninstaller", "urlCleaner",  # extras
     "autoQuit",                                              # quit app on last window close
+    "brightness",                                            # display brightness (DDC for external)
     "keepAwake", "monitorCPU", "monitorDisk", "monitorGPU",
     "monitorMemory", "monitorNetwork", "monitorPower",       # default-on, explicit
 )
@@ -175,6 +176,11 @@ _VORSSAINT_SETTINGS = {
     # auto-quit an app when its last window closes (Windows behavior); exceptions
     # written separately as an array (see _VORSSAINT_AUTOQUIT_EXCEPTIONS)
     "autoQuitEnabled": ("-bool", "true"),
+    # brightness: control display brightness (DDC for external monitors) + extra
+    # (XDR) brightness on the built-in panel. NOT set: brightnessDDCWriteOnlyPaths
+    # (machine-specific per-display DDC paths) and its *Rechecked / promptState flags.
+    "brightnessControlEnabled": ("-bool", "true"),
+    "extraBrightnessEnabled": ("-bool", "true"),
     # dynamic island ("notch"): on, spacious, show downloads, hide scratchpad
     # control, plain (non-liquid-glass) style. NOT set: notchDefaultProfileInitialized
     # (let the app build its own default notch profile) and notchDownloadsFolderBookmark
