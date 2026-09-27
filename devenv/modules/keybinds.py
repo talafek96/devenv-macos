@@ -175,6 +175,15 @@ _VORSSAINT_SETTINGS = {
     # auto-quit an app when its last window closes (Windows behavior); exceptions
     # written separately as an array (see _VORSSAINT_AUTOQUIT_EXCEPTIONS)
     "autoQuitEnabled": ("-bool", "true"),
+    # dynamic island ("notch"): on, spacious, show downloads, hide scratchpad
+    # control, plain (non-liquid-glass) style. NOT set: notchDefaultProfileInitialized
+    # (let the app build its own default notch profile) and notchDownloadsFolderBookmark
+    # (a machine-specific security-scoped bookmark — re-selected per machine).
+    "notchEnabled": ("-bool", "true"),
+    "notchSize": ("-string", "spacious"),
+    "notchDownloadsEnabled": ("-bool", "true"),
+    "notchScratchpadControlHidden": ("-bool", "true"),
+    "notchLiquidGlassEnabled": ("-bool", "false"),
     # system monitors: appearance, sampling, and alert thresholds
     "menuBarMetricAppearance": ("-string", "values"),
     "monitorMemoryMetric": ("-string", "used"),
