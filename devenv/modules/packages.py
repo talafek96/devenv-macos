@@ -24,6 +24,12 @@ FORMULAE = [
     "tree",       # directory tree view
     "m1ddc",      # DDC/CI control for external monitors on Apple Silicon
                   # (brightness/volume from the CLI; MonitorControl uses the same path)
+    # Node.js
+    "node",       # current Node - the default `node`/`npm` on PATH
+    "node@22",    # LTS Node, keg-only (not on PATH): for tools that support only LTS lines,
+                  # e.g. Electron Forge packaging in photoprep, which hangs or silently does nothing
+                  # on a current Node. Use it per command:
+                  #   PATH="$(brew --prefix node@22)/bin:$PATH" npx electron-forge make
 ]
 
 

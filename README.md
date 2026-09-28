@@ -59,7 +59,9 @@ exec zsh                    # pick up the new shell
 
 ### Homebrew formulae (`packages`)
 `gh`, `zellij`, `duti`, `mas`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`,
-`m1ddc` (DDC/CI control for external monitors on Apple Silicon).
+`m1ddc` (DDC/CI control for external monitors on Apple Silicon), `node` (current, on PATH) and
+`node@22` (LTS, keg-only — use it per command for tools that need an LTS Node, e.g.
+`PATH="$(brew --prefix node@22)/bin:$PATH" npx electron-forge make`).
 
 ### Homebrew casks (`casks`)
 `ghostty`, `maccy`, `monitorcontrol` (media keys → external-monitor
