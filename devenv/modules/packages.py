@@ -22,6 +22,7 @@ FORMULAE = [
     "eza",        # modern ls (icons, git status)
     "jq",         # JSON processor
     "tree",       # directory tree view
+    "ffmpeg",     # video/audio encoder; photoprep's MP4 export uses it (H.264 via libx264)
     "m1ddc",      # DDC/CI control for external monitors on Apple Silicon
                   # (brightness/volume from the CLI; MonitorControl uses the same path)
     # Node.js
