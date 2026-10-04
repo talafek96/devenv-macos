@@ -22,13 +22,66 @@ opt-in Karabiner keymap also prompts — see [Karabiner is opt-in](#karabiner-is
 > with `DEVENV_MACOS_DIR=/path bash <(curl ...)`. The setup works from wherever
 > the repo lives.
 
-## Quick start (already have brew + git)
+> Setup arguments pass straight through the one-liner, e.g.
+> `bash <(curl ...) --only casks,keybinds`.
+
+## Quick start (already have git)
+
+`setup.sh` installs Homebrew itself if it's missing, so the only prerequisite is
+git (to clone).
 
 ```bash
 git clone https://github.com/talafek96/devenv-macos.git   # anywhere you like
 cd devenv-macos
 ./setup.sh
 exec zsh                    # pick up the new shell
+```
+
+## Environment variables
+
+Everything optional is switched on with an environment variable set **before**
+the setup command. Unset means off — a plain `./setup.sh` installs only the
+defaults.
+
+| Variable | Values | What it does |
+|---|---|---|
+| `DEVENV_KARABINER` | `1` / `true` / `yes` / `on` | Installs **Karabiner-Elements** and links the Windows-feel keymap (`Ctrl+C`/`V`, Win-key window management, external-keyboard ⌘/⌥ swap, …), and adds its permission steps to the checklist. Its installer prompts for your password. Unsetting it later never removes an already-linked keymap — it just stops managing it. See [Karabiner is opt-in](#karabiner-is-opt-in) and the [keymap reference](dotfiles/config/karabiner/README.md). |
+| `DEVENV_CLEANSHOT` | `1` / `true` / `yes` / `on` | Installs **CleanShot X** (paid screenshot app with screen-freeze), binds it to `Option+Shift+S`, keeps it running at login, and sets its after-capture behavior (copy to clipboard + Quick Access Overlay, ask for a save destination). Needs a one-time license activation. Unset: `Option+Shift+S` uses the built-in macOS area screenshot — unless CleanShot X is already installed, in which case it is still configured. See [CleanShot X is opt-in](#cleanshot-x-is-opt-in). |
+| `DEVENV_CLAUDE_ASSETS` | `1` / `true` / `yes` / `on` to install · `uninstall` / `remove` / `unlink` to remove | Symlinks the default **Claude Code** agents, skills and commands from `devenv/assets/claude/` into `~/.claude/`. Tri-state: truthy links them, an uninstall word removes only the links this repo created, and unset leaves whatever is there alone. See [Claude Code assets are opt-in](#claude-code-assets-are-opt-in). |
+| `DEVENV_MACOS_DIR` | a path | **`bootstrap.sh` only.** Where the one-liner clones the repo (default `~/devenv-macos`). Ignored by `./setup.sh`, which runs from wherever the repo already lives. |
+
+Not everything has a switch: **Vorssaint** (app switcher, window snapping,
+scroll invert, volume mixer, auto-quit, dynamic island), **MonitorControl** and
+**Maccy** are part of the default cask set and are always installed and
+configured — see [Homebrew casks](#homebrew-casks-casks) and
+[macOS keyboard layer](#macos-keyboard-layer-keybinds).
+
+### Examples
+
+```bash
+# Defaults only
+./setup.sh
+
+# One opt-in
+DEVENV_KARABINER=1 ./setup.sh
+
+# Several at once
+DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 DEVENV_CLAUDE_ASSETS=1 ./setup.sh
+
+# Only the modules a flag touches (faster re-run)
+DEVENV_KARABINER=1 ./setup.sh --only casks,dotfiles,keybinds
+DEVENV_CLEANSHOT=1 ./setup.sh --only casks,keybinds
+DEVENV_CLAUDE_ASSETS=1 ./setup.sh --only claude
+
+# Remove the Claude Code assets again
+DEVENV_CLAUDE_ASSETS=uninstall ./setup.sh --only claude
+
+# Fresh machine: opt-ins + a custom clone location, via the one-liner
+DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1 DEVENV_MACOS_DIR=~/code/devenv-macos \
+  bash <(curl -fsSL https://raw.githubusercontent.com/talafek96/devenv-macos/main/bootstrap.sh)
+
+# Keep them on for every future run (add to ~/.zshrc_private, which is untracked)
+export DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1
 ```
 
 ## What it sets up

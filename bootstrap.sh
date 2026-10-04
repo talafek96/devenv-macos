@@ -43,4 +43,5 @@ TAG=$(git -C "$DEST" tag -l 'v*' | sort -V | tail -1)
 [ -n "$TAG" ] && git -C "$DEST" checkout "$TAG" --quiet
 
 # ── 4. Hand off to the real setup ────────────────────────────
-exec "$DEST/setup.sh"
+# Forward any arguments, so `bash <(curl ...) --only casks` works too.
+exec "$DEST/setup.sh" "$@"
