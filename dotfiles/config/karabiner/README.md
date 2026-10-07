@@ -68,12 +68,17 @@ reason.
 
 | Keys | Action | Notes |
 |---|---|---|
-| Ctrl+(Shift+)← / → | Move / select by word | |
+| Left Ctrl+(Shift+)← / → | Move / select by word | |
 | Ctrl+(Shift+)Home / End | Document start / end | |
-| RightCtrl+← / → | Line / document start / end | Not terminal or Jump |
-| RightCtrl+↑ / ↓ | Document top / bottom | Not terminal or Jump |
+| Right Option (MacBook) / Right Ctrl (external) + ← / → | Line / document start / end | Not terminal or Jump |
+| Right Option / Right Ctrl + ↑ / ↓ | Document top / bottom | Not terminal or Jump |
 | Ctrl+Backspace | Delete word backward | Not Ghostty/Jump |
 | Ctrl+Delete | Delete word forward | Not Ghostty/Jump |
+
+The "line start/end" key is whichever modifier sits right next to the arrow
+keys: **Right Option** on the MacBook keyboard, **Right Ctrl** on an external PC
+keyboard. **Left Ctrl** + arrows is word jump. All of these keep working with
+Caps Lock on.
 
 ## Window management & launching
 
@@ -94,9 +99,9 @@ reason.
 
 | Keys | Action |
 |---|---|
-| RightOpt+← / → | Line start / end (Ctrl+A / Ctrl+E) |
-| RightOpt+↑ / ↓ | Page up / down |
-| RightOpt+Shift+↑ / ↓ | Line up / down |
+| Right Option / Right Ctrl + ← / → | Line start / end (Ctrl+A / Ctrl+E) |
+| Right Option / Right Ctrl + ↑ / ↓ | Page up / down |
+| Right Option / Right Ctrl + Shift+↑ / ↓ | Line up / down |
 
 ## Finder
 

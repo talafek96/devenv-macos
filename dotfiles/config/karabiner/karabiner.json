@@ -79,7 +79,10 @@
                             {
                                 "from": {
                                     "key_code": "left_shift",
-                                    "modifiers": { "mandatory": ["left_command"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_command"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [{ "key_code": "left_shift", "modifiers": ["left_command"] }],
                                 "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control", "left_option"] }],
@@ -342,7 +345,7 @@
                                     "key_code": "a",
                                     "modifiers": {
                                         "mandatory": ["control"],
-                                        "optional": []
+                                        "optional": ["caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -375,7 +378,7 @@
                                     "key_code": "f",
                                     "modifiers": {
                                         "mandatory": ["control"],
-                                        "optional": []
+                                        "optional": ["caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -410,7 +413,7 @@
                                     "key_code": "g",
                                     "modifiers": {
                                         "mandatory": ["control"],
-                                        "optional": []
+                                        "optional": ["caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -583,7 +586,7 @@
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] Ctrl+(Shift+)← → move/select word left",
+                        "description": "[Edit][Caret] LeftCtrl+(Shift+)← → move/select word left",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -598,8 +601,8 @@
                                 "from": {
                                     "key_code": "left_arrow",
                                     "modifiers": {
-                                        "mandatory": ["control"],
-                                        "optional": ["shift"]
+                                        "mandatory": ["left_control"],
+                                        "optional": ["shift", "caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -613,7 +616,7 @@
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] Ctrl+(Shift+)→ → move/select word right",
+                        "description": "[Edit][Caret] LeftCtrl+(Shift+)→ → move/select word right",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -628,8 +631,8 @@
                                 "from": {
                                     "key_code": "right_arrow",
                                     "modifiers": {
-                                        "mandatory": ["control"],
-                                        "optional": ["shift"]
+                                        "mandatory": ["left_control"],
+                                        "optional": ["shift", "caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -662,7 +665,7 @@
                                     "key_code": "home",
                                     "modifiers": {
                                         "mandatory": ["control"],
-                                        "optional": ["shift"]
+                                        "optional": ["shift", "caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -695,7 +698,7 @@
                                     "key_code": "end",
                                     "modifiers": {
                                         "mandatory": ["control"],
-                                        "optional": ["shift"]
+                                        "optional": ["shift", "caps_lock"]
                                     }
                                 },
                                 "to": [
@@ -709,7 +712,7 @@
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] RightCtrl+← → line/doc start (Cmd+←) · not terminal/Jump",
+                        "description": "[Edit][Caret] RightOpt/RightCtrl+← → line/doc start (Cmd+←) · not terminal/Jump (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -738,11 +741,39 @@
                                     }
                                 ],
                                 "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer$",
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.apple\\.Terminal$",
+                                            "^com\\.googlecode\\.iterm2$"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "left_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "left_arrow",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
+                                "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] RightCtrl+→ → line/doc end (Cmd+→) · not terminal/Jump",
+                        "description": "[Edit][Caret] RightOpt/RightCtrl+→ → line/doc end (Cmd+→) · not terminal/Jump (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -771,11 +802,39 @@
                                     }
                                 ],
                                 "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer$",
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.apple\\.Terminal$",
+                                            "^com\\.googlecode\\.iterm2$"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "right_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "right_arrow",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
+                                "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] RightCtrl+↑ → document top (Cmd+↑) · not terminal/Jump",
+                        "description": "[Edit][Caret] RightOpt/RightCtrl+↑ → document top (Cmd+↑) · not terminal/Jump (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -804,11 +863,39 @@
                                     }
                                 ],
                                 "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer$",
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.apple\\.Terminal$",
+                                            "^com\\.googlecode\\.iterm2$"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "up_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "up_arrow",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
+                                "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "[Edit][Caret] RightCtrl+↓ → document bottom (Cmd+↓) · not terminal/Jump",
+                        "description": "[Edit][Caret] RightOpt/RightCtrl+↓ → document bottom (Cmd+↓) · not terminal/Jump (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -827,6 +914,34 @@
                                     "key_code": "down_arrow",
                                     "modifiers": {
                                         "mandatory": ["right_option"],
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "down_arrow",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer$",
+                                            "^com\\.p5sys\\.jump\\.mac\\.viewer\\.web$",
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.apple\\.Terminal$",
+                                            "^com\\.googlecode\\.iterm2$"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "down_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
                                         "optional": ["any"]
                                     }
                                 },
@@ -917,7 +1032,10 @@
                                 ],
                                 "from": {
                                     "key_code": "left_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -950,7 +1068,10 @@
                                 ],
                                 "from": {
                                     "key_code": "right_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -988,7 +1109,10 @@
                                 ],
                                 "from": {
                                     "key_code": "up_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1021,7 +1145,10 @@
                                 ],
                                 "from": {
                                     "key_code": "up_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1059,7 +1186,10 @@
                                 ],
                                 "from": {
                                     "key_code": "down_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1092,7 +1222,10 @@
                                 ],
                                 "from": {
                                     "key_code": "down_arrow",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1125,7 +1258,10 @@
                                 ],
                                 "from": {
                                     "key_code": "l",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1152,7 +1288,10 @@
                                 ],
                                 "from": {
                                     "key_code": "period",
-                                    "modifiers": { "mandatory": ["left_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_option"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1245,20 +1384,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+← → line start (Ctrl+A) · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+← → line start (Ctrl+A) · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "left_arrow",
-                                    "modifiers": { "mandatory": ["right_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "a",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "left_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1271,20 +1433,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+→ → line end (Ctrl+E) · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+→ → line end (Ctrl+E) · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "right_arrow",
-                                    "modifiers": { "mandatory": ["right_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "e",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "right_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1297,20 +1482,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+↑ → page up · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+↑ → page up · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "up_arrow",
-                                    "modifiers": { "mandatory": ["right_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "up_arrow",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "up_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1323,20 +1531,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+↓ → page down · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+↓ → page down · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "down_arrow",
-                                    "modifiers": { "mandatory": ["right_option"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "down_arrow",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "down_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1349,20 +1580,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+Shift+↑ → line up · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+Shift+↑ → line up · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "up_arrow",
-                                    "modifiers": { "mandatory": ["right_option", "shift"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option", "shift"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "up_arrow",
+                                        "modifiers": ["left_control", "left_shift"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "up_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control", "shift"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -1375,20 +1629,43 @@
                         ]
                     },
                     {
-                        "description": "[Term] RightOpt+Shift+↓ → line down · Ghostty",
+                        "description": "[Term] RightOpt/RightCtrl+Shift+↓ → line down · Ghostty (RightCtrl = external keyboard)",
                         "manipulators": [
                             {
                                 "conditions": [
                                     {
-                                        "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
-                                        ],
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
                                         "type": "frontmost_application_if"
                                     }
                                 ],
                                 "from": {
                                     "key_code": "down_arrow",
-                                    "modifiers": { "mandatory": ["right_option", "shift"] }
+                                    "modifiers": {
+                                        "mandatory": ["right_option", "shift"],
+                                        "optional": ["caps_lock"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "down_arrow",
+                                        "modifiers": ["left_control", "left_shift"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "down_arrow",
+                                    "modifiers": {
+                                        "mandatory": ["right_control", "shift"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -2061,7 +2338,10 @@
                                 ],
                                 "from": {
                                     "key_code": "f5",
-                                    "modifiers": { "mandatory": ["fn"] }
+                                    "modifiers": {
+                                        "mandatory": ["fn"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -2085,7 +2365,10 @@
                                 ],
                                 "from": {
                                     "key_code": "n",
-                                    "modifiers": { "mandatory": ["left_command"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_command"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
@@ -2109,7 +2392,10 @@
                                 ],
                                 "from": {
                                     "key_code": "n",
-                                    "modifiers": { "mandatory": ["left_command", "shift"] }
+                                    "modifiers": {
+                                        "mandatory": ["left_command", "shift"],
+                                        "optional": ["caps_lock"]
+                                    }
                                 },
                                 "to": [
                                     {
