@@ -50,6 +50,19 @@ launchctl kickstart -k "gui/$(id -u)/org.pqrs.service.agent.Karabiner-Console-Us
 | Ctrl+A | Select All |
 | Ctrl+F / Ctrl+G | Find / Find Next |
 | Ctrl+W | Close (not in terminal) |
+| Ctrl+T | New tab (browsers, Finder, any tabbed app) |
+| Ctrl+B / Ctrl+I / Ctrl+U | Bold / Italic / Underline |
+
+Ctrl+Shift+N also works (→ ⌘⇧N, e.g. incognito window), because the Ctrl+N rule
+passes Shift through. All of these are off in terminals and Jump Desktop.
+
+**VS Code / Cursor:** Ctrl+S, Ctrl+N, Ctrl+G, Ctrl+T and Ctrl+B are *not*
+remapped there, so they reach the integrated terminal untouched — zellij's
+default keys (Ctrl+G unlock, Ctrl+T tab, Ctrl+N resize, Ctrl+S scroll, Ctrl+B
+tmux) keep working when zellij runs inside VS Code. Use ⌘S / ⌘N / … in the
+editor instead (on the external keyboard that's Alt+S, since Alt = ⌘). Ctrl+P,
+Ctrl+O, Ctrl+H and Ctrl+Q are deliberately never remapped anywhere, for the same
+reason.
 
 ## Caret & word navigation
 
@@ -99,7 +112,9 @@ launchctl kickstart -k "gui/$(id -u)/org.pqrs.service.agent.Karabiner-Console-Us
 | Ctrl+D | Bookmark page (⌘D) | |
 | Ctrl+Shift+T | Reopen closed tab | |
 | Ctrl+Click | Open link in new tab (⌘Click) | |
-| fn+F5 | Reload (⌘R) | Plain F5 stays Brightness |
+| Ctrl+R / fn+F5 | Reload (⌘R) | Plain F5 stays Brightness |
+| Ctrl+1 … Ctrl+9 | Jump to tab 1…9 (⌘1…9) | |
+| Ctrl+= / Ctrl+- / Ctrl+0 | Zoom in / out / reset | |
 | Cmd+N / Cmd+Shift+N | Option+N / Option+Shift+N | Edge only (extension quirk) |
 
 ## Jump Desktop (remote sessions)
