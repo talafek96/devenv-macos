@@ -81,6 +81,9 @@ keybind = cmd+shift+up=resize_split:up,10
 keybind = cmd+shift+down=resize_split:down,10
 
 # --- Scroll (Ctrl: page; +Shift: line-by-line) / clear ---
+# Mouse wheel: 1x, because Vorssaint's linear scroll already sends 3 lines per
+# notch (Windows Terminal feel). Ghostty's default discrete:3 would make it 9.
+mouse-scroll-multiplier = precision:1,discrete:1
 keybind = ctrl+shift+k=clear_screen
 keybind = ctrl+up=scroll_page_up
 keybind = ctrl+down=scroll_page_down

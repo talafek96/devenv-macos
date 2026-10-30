@@ -136,6 +136,8 @@ _VORSSAINT_MODULES = (
     "dockClick", "dockPreview", "extraBrightness", "finderCutPaste",
     "finderRename", "middleClick", "uninstaller", "urlCleaner",  # extras
     "autoQuit",                                              # quit app on last window close
+    "linearScroll",                                          # Windows-style wheel: no acceleration
+    "scrollZoom",                                            # Ctrl+wheel zooms (Windows feel)
     "brightness",                                            # display brightness (DDC for external)
     "keepAwake", "monitorCPU", "monitorDisk", "monitorGPU",
     "monitorMemory", "monitorNetwork", "monitorPower",       # default-on, explicit
@@ -160,6 +162,16 @@ _VORSSAINT_SETTINGS = {
     # scroll invert (was Mos): vertical + horizontal
     "scrollInverterEnabled": ("-bool", "true"),
     "scrollInverterHorizontalEnabled": ("-bool", "true"),
+    # linear wheel scroll: a fixed 3 lines per notch, no macOS acceleration
+    # (Windows default). Without it a fast flick multiplies into a huge jump,
+    # worst in terminals, where each wheel line becomes several rows.
+    "linearScrollEnabled": ("-bool", "true"),
+    "linearScrollLines": ("-int", "3"),
+    # Ctrl+wheel zoom (Windows feel): sends a pinch gesture at the pointer, so it
+    # works in apps whose zoom keys aren't Cmd+/- (e.g. Pixea uses plain =/-).
+    # The Cmd+/- keyboard variant (verticalZoomEnabled) stays off.
+    "pinchZoomEnabled": ("-bool", "true"),
+    "pinchZoomModifier": ("-string", "control"),
     # dock preview + click-to-hide
     "dockPreviewEnabled": ("-bool", "true"),
     "dockClickHide": ("-bool", "true"),
