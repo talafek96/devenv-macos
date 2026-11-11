@@ -68,6 +68,12 @@
          jump, worst in terminals, where each wheel line becomes several rows. -->
     <key>linearScrollEnabled</key><true/>
     <key>linearScrollLines</key><integer>3</integer>
+    <!-- Apps left on normal macOS (accelerated) scrolling. WhatsApp is a Mac
+         Catalyst (iPad) app, where 3 linear lines per notch feels slow. -->
+    <key>linearScrollExceptions</key>
+    <array>
+      <string>net.whatsapp.WhatsApp</string>
+    </array>
     <!-- Ctrl+wheel zoom: sends a pinch gesture at the pointer, so it works in
          apps whose zoom keys aren't Cmd+/- (e.g. Pixea uses plain =/-). The
          Cmd+/- keyboard variant (verticalZoomEnabled) stays off. -->
