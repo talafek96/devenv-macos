@@ -26,6 +26,8 @@ test: ## Validate scripts + module discovery + config files
 	@python3 -c "import sys; sys.path.insert(0,'.'); from devenv.modules import discover_modules; m=discover_modules(); print(f'{len(m)} modules: '+', '.join(x.name for x in m))"
 	@echo "Validating karabiner.json..."
 	@plutil -convert json -o /dev/null dotfiles/config/karabiner/karabiner.json && echo "  karabiner.json OK"
+	@echo "Validating Vorssaint settings.plist..."
+	@python3 -c "import plistlib; s=plistlib.load(open('dotfiles/config/vorssaint/settings.plist','rb'))['settings']; bad=[k for k,v in s.items() if k.startswith('featureAvailable.') and not isinstance(v,bool)]; assert not bad, f'featureAvailable.* must be <true/>/<false/>: {bad}'; print(f'  settings.plist OK ({len(s)} keys)')"
 	@echo "All checks passed."
 
 check: lint test ## Run all quality checks

@@ -109,6 +109,13 @@ export DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1
   globe/fn key is left **native** (see below). Only symlinked when opted in.
 - **`~/Library/Application Support/Code/User/settings.json`** — VS Code user
   settings (format-on-save, 100-col ruler, zsh terminal, telemetry off, …).
+- **`~/.config/vorssaint/settings.plist`** — Vorssaint's modules and settings
+  (switcher, window snapping and its shortcuts, scroll invert / linear scroll /
+  Ctrl+wheel zoom, auto-quit exceptions, …), documented inline in
+  `dotfiles/config/vorssaint/settings.plist`. Not a symlink: Vorssaint reads
+  only this one file, so setup *writes* it from the shared repo file merged with
+  your untracked `settings.private.plist` (see [Private config](#private-config)).
+  Vorssaint applies it at every launch; keys it doesn't list stay local.
 
 ### Homebrew formulae (`packages`)
 `gh`, `zellij`, `duti`, `mas`, `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `jq`, `tree`,
@@ -165,7 +172,7 @@ clipboard — the Windows key sits where Option is on a Mac) and installing a
 LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
 isn't running — installing the cask alone doesn't auto-launch it), keeping
 **Vorssaint** (menu-bar toolkit — app switcher, window snapping, scroll-invert,
-volume mixer; modules pre-enabled via `defaults`, Accessibility granted by hand) and
+volume mixer; modules and settings from its [settings file](#dotfiles-symlinked-from-dotfiles), Accessibility granted by hand) and
 **MonitorControl** (external-monitor DDC volume — brightness keys left native,
 DDC reads off for external displays to avoid Apple-Silicon 0/max jumps) alive at
 login the same way, binding
@@ -349,6 +356,17 @@ sourced *after* the shared `~/.zsh_aliases_shared`, so your entries win.
 `~/.config/ghostty/local.conf` plays the same role for Ghostty: the tracked
 config ends with `config-file = ?~/.config/ghostty/local.conf` (the `?` makes it
 optional), so personal-taste overrides like `theme = …` live outside the repo.
+
+`~/.config/vorssaint/settings.private.plist` is created (not tracked) for
+machine-specific Vorssaint settings. Setup merges it on top of the repo's
+`dotfiles/config/vorssaint/settings.plist` (your keys win) into the
+`settings.plist` Vorssaint reads, then restarts Vorssaint. Add keys inside its
+`settings` dict in the same format as the shared file, e.g.
+`<key>linearScrollLines</key><integer>5</integer>`, and re-run
+`./setup.sh --only keybinds`. A setting the files list reverts at Vorssaint's
+next launch if you change it in the app, so change it in a file instead. To see
+every key name, export your current settings:
+`/Applications/Vorssaint.app/Contents/MacOS/Vorssaint --export-settings /tmp/vorssaint-all.plist`.
 
 ## Idempotent + self-updating
 

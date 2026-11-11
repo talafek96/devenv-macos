@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Vorssaint settings, shared across machines (source of truth for setup).
+
+  Vorssaint (3.4.4+) reads ~/.config/vorssaint/settings.plist at every launch
+  and overlays the keys listed here onto its preferences. Keys NOT listed stay
+  local, so anything you change in Vorssaint's own Settings for an unlisted key
+  sticks. A listed key you change in the app is reset at the next launch, so
+  change it here (or in your private file) instead.
+
+  Setup does not symlink this file: it merges it with your untracked
+  ~/.config/vorssaint/settings.private.plist (private keys win) and writes the
+  result to ~/.config/vorssaint/settings.plist. Re-run setup after editing either file
+  (just the keybinds module is enough); it also restarts Vorssaint.
+
+  Format: Vorssaint's own export format (a "settings" dict + backup version).
+  To see every key name, export your settings: run the Vorssaint binary
+  (/Applications/Vorssaint.app/Contents/MacOS/Vorssaint) with the
+  export-settings flag and a destination path (see the main README).
+  Left out on purpose: cosmetic/transient keys (window size, icon tint,
+  migration flags) and clipboard-* keys (that module is off; Maccy owns
+  clipboard history).
+  Module switches (featureAvailable.*) must be <true/>/<false/>, not integers,
+  or Vorssaint ignores them.
+-->
+<plist version="1.0">
+<dict>
+  <key>settings</key>
+  <dict>
+    <!-- ── Modules (featureAvailable.<name>) ───────────────────────── -->
+    <!-- The core replacements: app switcher (was AltTab), window snapping
+         (was Rectangle), scroll invert (was Mos), per-app volume mixer. -->
+    <key>featureAvailable.switcher</key><true/>
+    <key>featureAvailable.windowLayout</key><true/>
+    <key>featureAvailable.scrollInverter</key><true/>
+    <key>featureAvailable.mixer</key><true/>
+    <!-- Extras -->
+    <key>featureAvailable.dockClick</key><true/>
+    <key>featureAvailable.dockPreview</key><true/>
+    <key>featureAvailable.extraBrightness</key><true/>
+    <key>featureAvailable.finderCutPaste</key><true/>
+    <key>featureAvailable.finderRename</key><true/>
+    <key>featureAvailable.middleClick</key><true/>
+    <key>featureAvailable.uninstaller</key><true/>
+    <key>featureAvailable.urlCleaner</key><true/>
+    <key>featureAvailable.autoQuit</key><true/>              <!-- quit app on last window close -->
+    <key>featureAvailable.linearScroll</key><true/>          <!-- Windows-style wheel: no acceleration -->
+    <key>featureAvailable.scrollZoom</key><true/>            <!-- Ctrl+wheel zooms (Windows feel) -->
+    <key>featureAvailable.brightness</key><true/>            <!-- display brightness (DDC for external) -->
+    <key>featureAvailable.keepAwake</key><true/>
+    <key>featureAvailable.monitorCPU</key><true/>
+    <key>featureAvailable.monitorDisk</key><true/>
+    <key>featureAvailable.monitorGPU</key><true/>
+    <key>featureAvailable.monitorMemory</key><true/>
+    <key>featureAvailable.monitorNetwork</key><true/>
+    <key>featureAvailable.monitorPower</key><true/>
+
+    <!-- ── Scrolling ──────────────────────────────────────────────── -->
+    <!-- Scroll invert for the mouse (vertical + horizontal). macOS natural
+         scrolling stays ON for the trackpad; this flips only the wheel back
+         to Windows direction. -->
+    <key>scrollInverterEnabled</key><true/>
+    <key>scrollInverterHorizontalEnabled</key><true/>
+    <!-- Linear wheel scroll: a fixed 3 lines per notch, no macOS acceleration
+         (Windows default). Without it a fast flick multiplies into a huge
+         jump, worst in terminals, where each wheel line becomes several rows. -->
+    <key>linearScrollEnabled</key><true/>
+    <key>linearScrollLines</key><integer>3</integer>
+    <!-- Ctrl+wheel zoom: sends a pinch gesture at the pointer, so it works in
+         apps whose zoom keys aren't Cmd+/- (e.g. Pixea uses plain =/-). The
+         Cmd+/- keyboard variant (verticalZoomEnabled) stays off. -->
+    <key>pinchZoomEnabled</key><true/>
+    <key>pinchZoomModifier</key><string>control</string>
+
+    <!-- ── Dock, Finder, trackpad, URLs ────────────────────────────── -->
+    <key>dockPreviewEnabled</key><true/>
+    <key>dockClickHide</key><true/>
+    <key>dockClickMinimize</key><false/>
+    <!-- Finder cut/paste, Finder rename (F2 = its default key) -->
+    <key>finderCutPasteEnabled</key><true/>
+    <key>finderRenameEnabled</key><true/>
+    <!-- 3-finger tap = middle click -->
+    <key>middleClickEnabled</key><true/>
+    <key>middleClickTapFingers</key><integer>3</integer>
+    <key>urlCleanerEnabled</key><true/>
+
+    <!-- ── Window snapping ────────────────────────────────────────── -->
+    <!-- Keyboard snapping master switch (individual binds below). -->
+    <key>windowLayoutShortcutsEnabled</key><true/>
+    <!-- Windows Aero Snap: drag a window to a screen edge/corner to snap it,
+         and drag a snapped window away by its title bar to get its previous
+         size back (a click leaves it snapped). -->
+    <key>windowEdgeSnapEnabled</key><true/>
+    <key>windowEdgeSnapRestoreOnDrag</key><true/>
+    <!-- Rectangle-style shortcuts. Format "<modifiers>:<keycode>" with macOS
+         virtual key codes (arrows ←123 →124 ↓125 ↑126; letters D2 F3 G5 C8
+         E14 T17 U32 I34 J38 K40; Return36 Delete51; F11=103). Ctrl+Option
+         (= Win+Ctrl on the external keyboard) so it never clashes with the
+         ⌥+arrow "move by word" text shortcut. Displays add Command. -->
+    <key>windowLayoutShortcutLeft</key><string>control+option:123</string>          <!-- ⌃⌥←  left half -->
+    <key>windowLayoutShortcutRight</key><string>control+option:124</string>         <!-- ⌃⌥→  right half -->
+    <key>windowLayoutShortcutTop</key><string>control+option:126</string>           <!-- ⌃⌥↑  top half -->
+    <key>windowLayoutShortcutBottom</key><string>control+option:125</string>        <!-- ⌃⌥↓  bottom half -->
+    <key>windowLayoutShortcutMaximize</key><string>control+option:36</string>       <!-- ⌃⌥↩  maximize -->
+    <key>windowLayoutShortcutFullScreen</key><string>control+option:103</string>    <!-- ⌃⌥F11 native full screen -->
+    <key>windowLayoutShortcutCenter</key><string>control+option:8</string>          <!-- ⌃⌥C  center -->
+    <key>windowLayoutShortcutRestore</key><string>control+option:51</string>        <!-- ⌃⌥⌫  restore -->
+    <key>windowLayoutShortcutLeftThird</key><string>control+option:2</string>       <!-- ⌃⌥D -->
+    <key>windowLayoutShortcutCenterThird</key><string>control+option:3</string>     <!-- ⌃⌥F -->
+    <key>windowLayoutShortcutRightThird</key><string>control+option:5</string>      <!-- ⌃⌥G -->
+    <key>windowLayoutShortcutLeftTwoThirds</key><string>control+option:14</string>  <!-- ⌃⌥E -->
+    <key>windowLayoutShortcutRightTwoThirds</key><string>control+option:17</string> <!-- ⌃⌥T -->
+    <key>windowLayoutShortcutTopLeft</key><string>control+option:32</string>        <!-- ⌃⌥U -->
+    <key>windowLayoutShortcutTopRight</key><string>control+option:34</string>       <!-- ⌃⌥I -->
+    <key>windowLayoutShortcutBottomLeft</key><string>control+option:38</string>     <!-- ⌃⌥J -->
+    <key>windowLayoutShortcutBottomRight</key><string>control+option:40</string>    <!-- ⌃⌥K -->
+    <key>windowLayoutShortcutNextDisplay</key><string>control+option+command:124</string>     <!-- ⌃⌥⌘→ -->
+    <key>windowLayoutShortcutPreviousDisplay</key><string>control+option+command:123</string> <!-- ⌃⌥⌘← -->
+
+    <!-- ── Auto Quit ──────────────────────────────────────────────── -->
+    <!-- Quit an app when its last window closes (Windows behavior). These
+         apps are spared so they keep running in the background; Vorssaint
+         always spares Finder itself. -->
+    <key>autoQuitEnabled</key><true/>
+    <key>autoQuitExceptions</key>
+    <array>
+      <string>com.hnc.Discord</string>            <!-- notifications -->
+      <string>net.whatsapp.WhatsApp</string>      <!-- notifications -->
+      <string>org.m0k.transmission</string>       <!-- keeps seeding/downloading -->
+      <string>com.microsoft.Outlook</string>      <!-- mail sync / notifications -->
+      <string>us.zoom.xos</string>                <!-- calls / reminders -->
+      <string>com.microsoft.OneDrive-mac</string> <!-- keeps syncing -->
+      <string>com.google.drivefs</string>         <!-- keeps syncing -->
+    </array>
+
+    <!-- ── Displays ───────────────────────────────────────────────── -->
+    <!-- Display brightness (DDC for external monitors) + extra (XDR)
+         brightness on the built-in panel. Machine-specific DDC paths
+         (brightnessDDCWriteOnlyPaths) are deliberately not managed. -->
+    <key>brightnessControlEnabled</key><true/>
+    <key>extraBrightnessEnabled</key><true/>
+
+    <!-- ── Dynamic Island (notch) ─────────────────────────────────── -->
+    <!-- Spacious, show downloads, hide the scratchpad control, plain style.
+         The downloads-folder bookmark is per machine, so it is not managed. -->
+    <key>notchEnabled</key><true/>
+    <key>notchSize</key><string>spacious</string>
+    <key>notchDownloadsEnabled</key><true/>
+    <key>notchScratchpadControlHidden</key><true/>
+    <key>notchLiquidGlassEnabled</key><false/>
+
+    <!-- ── System monitors: appearance, sampling, alert thresholds ── -->
+    <key>menuBarMetricAppearance</key><string>values</string>
+    <key>monitorMemoryMetric</key><string>used</string>
+    <key>monitorIntervalSeconds</key><integer>2</integer>
+    <key>monitorPwrTemperature</key><true/>
+    <key>monitorAlertCPUThreshold</key><integer>90</integer>
+    <key>monitorAlertCPUTemperatureThreshold</key><integer>90</integer>
+    <key>monitorAlertBatteryPercent</key><integer>15</integer>
+    <key>monitorAlertBatteryTemperatureThreshold</key><integer>40</integer>
+    <key>monitorAlertDiskFreePercent</key><integer>10</integer>
+    <key>monitorAlertCooldownMinutes</key><integer>15</integer>
+    <key>batteryLimitPercent</key><integer>10</integer>
+  </dict>
+  <key>vorssaintBackupVersion</key><integer>1</integer>
+</dict>
+</plist>
