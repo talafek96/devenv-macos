@@ -7,11 +7,13 @@ repo's dotfiles/config/vorssaint/settings.plist with the untracked
 ~/.config/vorssaint/settings.private.plist (private keys win) and writes the
 result there.
 
-Used two ways:
+Used three ways:
   - by setup's keybinds module (merge only; setup handles the restart itself);
   - standalone by the com.devenv.vorssaint-settings LaunchAgent, which runs it
     whenever either source file changes: it rewrites the file and, if the result
-    changed and Vorssaint is running, restarts Vorssaint so it takes effect.
+    changed and Vorssaint is running, restarts Vorssaint so it takes effect;
+  - with --launch by the com.devenv.vorssaint login agent: the same catch-up,
+    then it opens Vorssaint.
 
 Stdlib only, so the LaunchAgent can run it with /usr/bin/python3 outside the
 devenv package.
@@ -146,5 +148,15 @@ def apply() -> int:
     return 0
 
 
+def launch() -> int:
+    """Login entry (com.devenv.vorssaint): catch up on any change made while the
+    watcher wasn't running, then open Vorssaint. One job, so Vorssaint never
+    starts on a stale file. If it is already up (its own login item), apply()
+    restarts it when the file changed and the open below is a no-op."""
+    status = apply()
+    subprocess.run(["open", "-a", "Vorssaint"], capture_output=True)
+    return status
+
+
 if __name__ == "__main__":
-    sys.exit(apply())
+    sys.exit(launch() if "--launch" in sys.argv[1:] else apply())

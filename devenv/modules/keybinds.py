@@ -100,6 +100,9 @@ _MACCY_AGENT_PLIST = """\
 _VORSSAINT_APP = Path("/Applications/Vorssaint.app")
 _VORSSAINT_DOMAIN = "com.vorssaint.utils"
 _VORSSAINT_AGENT_LABEL = "com.devenv.vorssaint"
+# At login: rebuild the settings file if a source changed while the watcher
+# below wasn't running (e.g. before login), THEN open Vorssaint, in one job so
+# Vorssaint can't start on a stale file (see vorssaint_settings.py --launch).
 _VORSSAINT_AGENT_PLIST = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -107,8 +110,10 @@ _VORSSAINT_AGENT_PLIST = """\
 <dict>
   <key>Label</key><string>com.devenv.vorssaint</string>
   <key>ProgramArguments</key>
-  <array><string>/usr/bin/open</string><string>-a</string><string>Vorssaint</string></array>
+  <array><string>/usr/bin/python3</string><string>{script}</string><string>--launch</string></array>
   <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>{log}</string>
+  <key>StandardErrorPath</key><string>{log}</string>
 </dict>
 </plist>
 """
@@ -424,7 +429,9 @@ class KeybindsModule(Module):
                    "snapping, scroll invert/linear/zoom, volume mixer, auto-quit, +extras); "
                    "applied when it relaunches")
 
-        self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST)
+        self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST.format(
+            script=Path(vorssaint_settings.__file__).resolve(),
+            log=ctx.home_dir / "Library/Logs/devenv-vorssaint-settings.log"))
         ctx.ok("Vorssaint set to launch at login — grant it Accessibility once "
                "(see the checklist) or the switcher/snapping/scroll won't work")
 

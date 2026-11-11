@@ -365,7 +365,8 @@ same format as the shared file, e.g.
 `<key>linearScrollLines</key><integer>5</integer>`, and save: a LaunchAgent
 setup installs watches both files, rebuilds the merged file and restarts
 Vorssaint within seconds (a `git pull` that changes the shared file applies the
-same way; log in `~/Library/Logs/devenv-vorssaint-settings.log`). A setting the files list reverts at Vorssaint's
+same way, and at login it catches up on changes made while logged out before
+opening Vorssaint; log in `~/Library/Logs/devenv-vorssaint-settings.log`). A setting the files list reverts at Vorssaint's
 next launch if you change it in the app, so change it in a file instead. To see
 every key name, export your current settings:
 `/Applications/Vorssaint.app/Contents/MacOS/Vorssaint --export-settings /tmp/vorssaint-all.plist`.
