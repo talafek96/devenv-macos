@@ -360,10 +360,12 @@ optional), so personal-taste overrides like `theme = …` live outside the repo.
 `~/.config/vorssaint/settings.private.plist` is created (not tracked) for
 machine-specific Vorssaint settings. Setup merges it on top of the repo's
 `dotfiles/config/vorssaint/settings.plist` (your keys win) into the
-`settings.plist` Vorssaint reads, then restarts Vorssaint. Add keys inside its
-`settings` dict in the same format as the shared file, e.g.
-`<key>linearScrollLines</key><integer>5</integer>`, and re-run
-`./setup.sh --only keybinds`. A setting the files list reverts at Vorssaint's
+`settings.plist` Vorssaint reads. Add keys inside its `settings` dict in the
+same format as the shared file, e.g.
+`<key>linearScrollLines</key><integer>5</integer>`, and save: a LaunchAgent
+setup installs watches both files, rebuilds the merged file and restarts
+Vorssaint within seconds (a `git pull` that changes the shared file applies the
+same way; log in `~/Library/Logs/devenv-vorssaint-settings.log`). A setting the files list reverts at Vorssaint's
 next launch if you change it in the app, so change it in a file instead. To see
 every key name, export your current settings:
 `/Applications/Vorssaint.app/Contents/MacOS/Vorssaint --export-settings /tmp/vorssaint-all.plist`.

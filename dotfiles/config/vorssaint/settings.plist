@@ -11,8 +11,9 @@
 
   Setup does not symlink this file: it merges it with your untracked
   ~/.config/vorssaint/settings.private.plist (private keys win) and writes the
-  result to ~/.config/vorssaint/settings.plist. Re-run setup after editing either file
-  (just the keybinds module is enough); it also restarts Vorssaint.
+  result to ~/.config/vorssaint/settings.plist. Saving either file applies it
+  within seconds: a LaunchAgent installed by setup rebuilds the file and
+  restarts Vorssaint (log: ~/Library/Logs/devenv-vorssaint-settings.log).
 
   Format: Vorssaint's own export format (a "settings" dict + backup version).
   To see every key name, export your settings: run the Vorssaint binary
