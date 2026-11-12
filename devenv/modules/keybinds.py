@@ -485,9 +485,14 @@ class KeybindsModule(Module):
         agents = ctx.home_dir / "Library/LaunchAgents"
         agents.mkdir(parents=True, exist_ok=True)
         plist = agents / f"{label}.plist"
-        if not plist.exists() or plist.read_text() != plist_text:
+        changed = not plist.exists() or plist.read_text() != plist_text
+        if changed:
             plist.write_text(plist_text)
-        # Reload so it's active now and registered for every login (idempotent).
+        # Reload only when needed: a reload re-runs RunAtLoad, and `open -a` on
+        # an app that's already running pops its window (Maccy's history).
+        loaded = ctx.run("launchctl", "list", label, capture=True, check=False).returncode == 0
+        if loaded and not changed:
+            return
         ctx.run("launchctl", "unload", str(plist), check=False)
         ctx.run("launchctl", "load", "-w", str(plist), check=False)
 
