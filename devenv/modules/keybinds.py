@@ -8,6 +8,7 @@ them and prints what still needs a manual click.
 
 from __future__ import annotations
 
+import os
 import plistlib
 from pathlib import Path
 
@@ -408,9 +409,10 @@ class KeybindsModule(Module):
                    "snapping, scroll invert/linear/zoom, volume mixer, auto-quit, +extras); "
                    "applied when it relaunches")
 
+        # start: Vorssaint was quit above; the job reopens it.
         self._ensure_login_item(ctx, _VORSSAINT_AGENT_LABEL, _VORSSAINT_AGENT_PLIST.format(
             script=Path(vorssaint_settings.__file__).resolve(),
-            log=ctx.home_dir / "Library/Logs/devenv-vorssaint-settings.log"))
+            log=ctx.home_dir / "Library/Logs/devenv-vorssaint-settings.log"), start=True)
         ctx.ok("Vorssaint set to launch at login — grant it Accessibility once "
                "(see the checklist) or the switcher/snapping/scroll won't work")
 
@@ -481,7 +483,10 @@ class KeybindsModule(Module):
     # Write + (re)load a per-user LaunchAgent that re-opens an app every login.
     # Shared by Maccy, Vorssaint and CleanShot: both expose global hotkeys that only fire
     # while the app is running, and neither cask launches itself at login.
-    def _ensure_login_item(self, ctx, label: str, plist_text: str) -> None:
+    # start=True: the caller quit the app, so run the job now even when the
+    # agent needs no reload.
+    def _ensure_login_item(self, ctx, label: str, plist_text: str,
+                           start: bool = False) -> None:
         agents = ctx.home_dir / "Library/LaunchAgents"
         agents.mkdir(parents=True, exist_ok=True)
         plist = agents / f"{label}.plist"
@@ -492,6 +497,8 @@ class KeybindsModule(Module):
         # an app that's already running pops its window (Maccy's history).
         loaded = ctx.run("launchctl", "list", label, capture=True, check=False).returncode == 0
         if loaded and not changed:
+            if start:
+                ctx.run("launchctl", "kickstart", f"gui/{os.getuid()}/{label}", check=False)
             return
         ctx.run("launchctl", "unload", str(plist), check=False)
         ctx.run("launchctl", "load", "-w", str(plist), check=False)
@@ -566,7 +573,8 @@ class KeybindsModule(Module):
         # CleanShot's Option+Shift+S only fires while CleanShot is running; keep
         # it alive across logins so the screenshot hotkey survives a restart.
         if _CLEANSHOT_APP.exists():
-            self._ensure_login_item(ctx, _CLEANSHOT_AGENT_LABEL, _CLEANSHOT_AGENT_PLIST)
+            self._ensure_login_item(ctx, _CLEANSHOT_AGENT_LABEL, _CLEANSHOT_AGENT_PLIST,
+                                    start=True)  # quit above for the prefs edit
             ctx.ok("CleanShot X set to launch at login (its Option+Shift+S hotkey needs it running)")
 
         ctx.info("Restart CleanShot X to pick up its shortcut / freeze settings.")
