@@ -265,8 +265,15 @@ What gets linked:
   accumulated query lessons into a ranked playbook).
 - **Skills** — `prior-art`, `duckduckgo-search`, `web-scraper` (the
   researcher agent routes all its fetching through these three, so they belong
-  wherever the agent lives), plus `claude-md-standards`, `explain-with-trees`,
-  `reconcile-docs`, and `resume-remote-handoff`.
+  wherever the agent lives), plus `explain-with-trees`, `reconcile-docs`, and
+  `resume-remote-handoff`.
+- **Plugins** — `agent-context` (the `claude-md-standards` skill for writing
+  and linting CLAUDE.md / AGENTS.md, plus `constitution-writer`), installed at
+  user scope from the
+  [agent-toolkit](https://github.com/talafek96/agent-toolkit) marketplace,
+  which setup registers. The marketplace is the single source of truth, so
+  `claude-md-standards` is no longer linked from this repo; a leftover link to
+  the old copy (or the older standalone plugin) is removed. Uninstall removes the plugin and keeps the marketplace entry.
 - **Commands** — `/end-session` (wind-down ritual) and `/shift-handoff`
   (compaction prompt for the next session).
 
