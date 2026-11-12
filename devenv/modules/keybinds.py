@@ -94,8 +94,8 @@ _MACCY_AGENT_PLIST = """\
 # apps at once: its modules cover the app switcher (was AltTab), window snapping
 # (was Rectangle), and scroll-direction invert for external mice (was Mos), plus
 # extras (per-app volume mixer, system monitors, keep-awake, …).
-# NOTE: MonitorControl still handles external-monitor DDC *volume* (Vorssaint
-# 3.4.4 added its own, not adopted yet); and Vorssaint can't replace Karabiner's
+# Since 3.4.4 it also drives external-monitor speakers over DDC (was
+# MonitorControl; see _retire_monitorcontrol). It can't replace Karabiner's
 # per-keyboard remapping.
 _VORSSAINT_APP = Path("/Applications/Vorssaint.app")
 _VORSSAINT_DOMAIN = "com.vorssaint.utils"
@@ -153,35 +153,16 @@ _VORSSAINT_ONBOARDING = {
     "onboardingStep": ("-int", "0"),
 }
 
-# MonitorControl drives external-monitor brightness/volume over DDC/CI from the
-# normal media keys — the piece macOS can't do for monitors it treats as
-# fixed-volume digital outputs (e.g. the Dell U3425WE's built-in speakers over
-# USB-C/DP, whose native volume slider is greyed out). Like Maccy it must be
-# running, and the cask doesn't launch it at login, so own a LaunchAgent.
-#
-# Two settings are pre-seeded (see _configure_monitorcontrol):
-#   - disableAltBrightnessKeys=true: leave the BRIGHTNESS keys native (we only
-#     want volume from it); this stops it from swallowing fn+F1/F2.
-#   - pollingMode=0 (per external display): don't READ DDC values. Apple Silicon
-#     DDC reads are unreliable and return garbage, which makes volume jump to
-#     0/max on each key; with reads off it steps from a cached value instead.
-# NOTE: still needs a one-time Accessibility grant (can't be scripted; checklist).
+# MonitorControl used to drive external-monitor speakers over DDC (e.g. the Dell
+# U3425WE over USB-C, whose macOS volume slider is greyed out). Vorssaint 3.4.4+
+# does this itself (displayVolume* keys in its settings file), and two apps
+# grabbing the volume keys fight, so setup retires MonitorControl on machines
+# that had it: removes our login agent, quits it and uninstalls the cask.
 _MONITORCONTROL_APP = Path("/Applications/MonitorControl.app")
-_MONITORCONTROL_DOMAIN = "app.monitorcontrol.MonitorControl"
-_MONITORCONTROL_PLIST_PATH = "Library/Preferences/app.monitorcontrol.MonitorControl.plist"
+_MONITORCONTROL_CASK = "monitorcontrol"
 _MONITORCONTROL_AGENT_LABEL = "com.devenv.monitorcontrol"
-_MONITORCONTROL_AGENT_PLIST = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>com.devenv.monitorcontrol</string>
-  <key>ProgramArguments</key>
-  <array><string>/usr/bin/open</string><string>-a</string><string>MonitorControl</string></array>
-  <key>RunAtLoad</key><true/>
-</dict>
-</plist>
-"""
+# First Vorssaint with monitor speaker control (and the settings file).
+_VORSSAINT_MIN_VERSION = (3, 4, 4)
 
 # ── Screenshot hotkey → Option+Shift+S ──────────────────────
 # CleanShot X (opt-in, DEVENV_CLEANSHOT) is the preferred capture app — it can
@@ -290,7 +271,7 @@ _CLEANSHOT_CHECKLIST = """\
 """
 
 _PERMISSION_CHECKLIST = """\
-  Vorssaint (menu-bar toolkit — replaces AltTab, Rectangle, and Mos):
+  Vorssaint (menu-bar toolkit — replaces AltTab, Rectangle, Mos and MonitorControl):
     - Grant Accessibility on first launch — REQUIRED, and the one thing setup
       can't do for you. Without it the switcher, window snapping, and
       scroll-invert stay dead. (System Settings → Privacy & Security →
@@ -314,12 +295,10 @@ _PERMISSION_CHECKLIST = """\
       flip Vorssaint's own "start at login" as a backup.
   Maccy (clipboard history):
     - Grant Accessibility if you want it to paste directly.
-  MonitorControl (external-monitor volume/brightness via DDC):
-    - Grant Accessibility on first launch, or media keys won't reach it.
-    - Only needed for monitors with a fixed/greyed volume slider (e.g. the
-      Dell U3425WE speakers over USB-C). Volume is pre-set to DDC; brightness
-      keys stay native. If wheel volume jumps to 0/max, set that display's
-      Polling to "None" (setup does this for displays it already knows).
+    - Monitor speakers (replaces MonitorControl): with sound going to a
+      monitor (e.g. the Dell U3425WE over USB-C), the volume keys/wheel move
+      the monitor's own volume in 2% steps, and the volume island follows the
+      pointer to that screen. Settings → Displays → Monitor speakers.
   Function row: globe/fn is native, so the printed hardware functions work via
   fn+F1..F12 out of the box (brightness, Mission Control, media, volume, Do Not
   Disturb on F6, etc.). For fn+F5 Dictation, enable it once under System
@@ -338,8 +317,8 @@ class KeybindsModule(Module):
         self._disable_space_switch_hotkeys(ctx)
         self._set_dictation_shortcut(ctx)
         self._set_app_hotkeys(ctx)
+        self._retire_monitorcontrol(ctx)
         self._ensure_vorssaint_login_item(ctx)
-        self._configure_monitorcontrol(ctx)
         self._bind_screenshot_hotkey(ctx)
         self._print_checklist(ctx)
 
@@ -459,51 +438,48 @@ class KeybindsModule(Module):
                f"it and restarts Vorssaint (log: {log})")
         return count
 
-    # Configure MonitorControl (media keys → external-monitor DDC volume) and
-    # keep it alive at login. See the constants block for why each pref is set.
-    def _configure_monitorcontrol(self, ctx) -> None:
-        if not _MONITORCONTROL_APP.exists():
-            ctx.info("MonitorControl not installed — skipping (external monitors "
-                     "with fixed digital audio won't get media-key volume control)")
+    # Hand monitor-speaker volume over to Vorssaint: on a machine that ran an
+    # older setup, remove our MonitorControl login agent, quit it and uninstall
+    # the cask. Skipped while Vorssaint is missing or older than 3.4.4, so the
+    # monitor never loses volume keys. Idempotent: a no-op once it's gone.
+    def _retire_monitorcontrol(self, ctx) -> None:
+        agent = ctx.home_dir / f"Library/LaunchAgents/{_MONITORCONTROL_AGENT_LABEL}.plist"
+        cask = _MONITORCONTROL_CASK in ctx.command_output("brew", "list", "--cask").split()
+        if not (agent.exists() or cask):
+            if _MONITORCONTROL_APP.exists():
+                # Installed by hand, not by setup: not ours to remove.
+                ctx.warn("MonitorControl is installed (not by setup): quit it, or it "
+                         "fights Vorssaint over the monitor's volume keys")
             return
+        version = self._vorssaint_version()
+        if version < _VORSSAINT_MIN_VERSION:
+            ctx.warn("Keeping MonitorControl: Vorssaint "
+                     f"{'.'.join(map(str, version)) if version else 'is not installed'}"
+                     f"{' is older than 3.4.4' if version else ''}, so it can't drive "
+                     "monitor speakers yet. Update Vorssaint and re-run setup.")
+            return
+        if agent.exists():
+            ctx.run("launchctl", "unload", str(agent), check=False)
+            agent.unlink()
+        if ctx.run("pgrep", "-x", "MonitorControl", capture=True, check=False).returncode == 0:
+            ctx.run("osascript", "-e", 'quit app "MonitorControl"', check=False)
+        if cask:
+            ctx.run("brew", "uninstall", "--cask", _MONITORCONTROL_CASK, check=False)
+        if _MONITORCONTROL_APP.exists():
+            ctx.warn(f"{_MONITORCONTROL_APP} is still there after uninstalling: "
+                     "delete it by hand so it can't grab the volume keys")
+        else:
+            ctx.ok("Removed MonitorControl: Vorssaint now drives monitor speakers")
 
-        # Only volume from it — keep the brightness keys native.
-        ctx.run("defaults", "write", _MONITORCONTROL_DOMAIN,
-                "disableAltBrightnessKeys", "-bool", "true", check=False)
-
-        # Turn OFF DDC reads for every external display MonitorControl already
-        # knows about (Apple Silicon reads are flaky → volume jumps to 0/max).
-        # Per-display key, so we discover the ids from its own prefs; a fresh
-        # machine that hasn't run MonitorControl yet simply has none to set yet.
-        for display_id in self._monitorcontrol_external_display_ids(ctx):
-            ctx.run("defaults", "write", _MONITORCONTROL_DOMAIN,
-                    f"pollingMode({display_id})", "-int", "0", check=False)
-
-        self._ensure_login_item(ctx, _MONITORCONTROL_AGENT_LABEL,
-                                _MONITORCONTROL_AGENT_PLIST)
-        ctx.ok("MonitorControl set to launch at login (media keys → external "
-               "monitor volume over DDC; grant it Accessibility once — checklist)")
-
-    # Read MonitorControl's prefs plist and return the display identifiers of
-    # external monitors (those with a volume value key `value98(<id>)`, minus the
-    # built-in ColorLCD). Best-effort: returns [] if the plist is absent/unreadable.
-    def _monitorcontrol_external_display_ids(self, ctx) -> list[str]:
-        plist_path = ctx.home_dir / _MONITORCONTROL_PLIST_PATH
+    def _vorssaint_version(self) -> tuple[int, ...]:
         try:
-            data = plistlib.loads(plist_path.read_bytes())
-        except (OSError, plistlib.InvalidFileException):
-            return []
-        ids = set()
-        for key in data:
-            # keys look like "value98(DELLU3425WE426841539@5)"
-            if key.startswith("value98(") and key.endswith(")"):
-                display_id = key[len("value98("):-1]
-                if not display_id.startswith("ColorLCD"):
-                    ids.add(display_id)
-        return sorted(ids)
+            info = plistlib.loads((_VORSSAINT_APP / "Contents/Info.plist").read_bytes())
+            return tuple(int(x) for x in info["CFBundleShortVersionString"].split(".")[:3])
+        except (OSError, KeyError, ValueError, plistlib.InvalidFileException):
+            return ()
 
     # Write + (re)load a per-user LaunchAgent that re-opens an app every login.
-    # Shared by Maccy and CleanShot: both expose global hotkeys that only fire
+    # Shared by Maccy, Vorssaint and CleanShot: both expose global hotkeys that only fire
     # while the app is running, and neither cask launches itself at login.
     def _ensure_login_item(self, ctx, label: str, plist_text: str) -> None:
         agents = ctx.home_dir / "Library/LaunchAgents"

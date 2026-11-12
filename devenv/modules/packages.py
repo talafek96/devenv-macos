@@ -24,7 +24,7 @@ FORMULAE = [
     "tree",       # directory tree view
     "ffmpeg",     # video/audio encoder; photoprep's MP4 export uses it (H.264 via libx264)
     "m1ddc",      # DDC/CI control for external monitors on Apple Silicon
-                  # (brightness/volume from the CLI; MonitorControl uses the same path)
+                  # (brightness/volume from the CLI; Vorssaint uses the same DDC path)
     # Node.js
     "node",       # current Node - the default `node`/`npm` on PATH
     "node@22",    # LTS Node, keg-only (not on PATH): for tools that support only LTS lines,

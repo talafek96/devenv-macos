@@ -147,6 +147,17 @@
          (brightnessDDCWriteOnlyPaths) are deliberately not managed. -->
     <key>brightnessControlEnabled</key><true/>
     <key>extraBrightnessEnabled</key><true/>
+    <!-- Monitor speakers (replaces MonitorControl): while the sound goes to a
+         monitor with its own speakers (e.g. the Dell U3425WE over USB-C, whose
+         macOS volume slider is greyed out), the volume keys and wheel move
+         the monitor's volume over DDC, 2% per click, faster on quick spins.
+         Choices: 1, 2, 3, 5, 6.25 (default) or 10. The MacBook speakers keep
+         normal macOS steps: Vorssaint's "finer volume steps" is a fixed 1.56%
+         with no speed-up, too slow on a wheel, so it stays off. -->
+    <key>displayVolumeEnabled</key><true/>
+    <key>displayVolumeKeysEnabled</key><true/>
+    <key>ddcVolumeStep</key><real>2</real>
+    <key>preciseVolumeRollerEnabled</key><false/>
 
     <!-- ── Dynamic Island (notch) ─────────────────────────────────── -->
     <!-- Spacious, show downloads, hide the scratchpad control, plain style.
@@ -156,6 +167,10 @@
     <key>notchDownloadsEnabled</key><true/>
     <key>notchScratchpadControlHidden</key><true/>
     <key>notchLiquidGlassEnabled</key><false/>
+    <!-- Show the island (and its volume/brightness slider) on the screen the
+         pointer is on, not only the built-in one. Options: automatic,
+         builtIn, main, pointer, all. -->
+    <key>notchDisplay</key><string>pointer</string>
 
     <!-- ── System monitors: appearance, sampling, alert thresholds ── -->
     <key>menuBarMetricAppearance</key><string>values</string>

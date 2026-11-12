@@ -16,12 +16,12 @@ CASKS = [
     # Core Windows-feel / terminal setup
     "ghostty",              # GPU terminal
     "maccy",                # clipboard history manager
-    "monitorcontrol",       # media keys → external-monitor brightness/volume via DDC
     # Vorssaint — all-in-one menu-bar toolkit. Replaces alt-tab (app switcher),
-    # rectangle (window snapping), and mos (scroll-direction invert). Its modules
-    # are enabled in-app (can't be scripted) — see the checklist. NOTE: it does
-    # NOT do external-monitor DDC *volume*, so MonitorControl stays; and it can't
-    # replace Karabiner's per-keyboard remapping. CleanShot X is kept on purpose.
+    # rectangle (window snapping), mos (scroll-direction invert) and, since
+    # 3.4.4, monitorcontrol (monitor speakers over DDC; the keybinds module
+    # uninstalls it on machines that had it). Its settings come from the repo's
+    # settings file. It can't replace Karabiner's per-keyboard remapping.
+    # CleanShot X is kept on purpose.
     "vorssaint",
     # Dev
     # Note: Claude Code is NOT a cask — the `tools` module installs it via the

@@ -51,7 +51,7 @@ defaults.
 | `DEVENV_MACOS_DIR` | a path | **`bootstrap.sh` only.** Where the one-liner clones the repo (default `~/devenv-macos`). Ignored by `./setup.sh`, which runs from wherever the repo already lives. |
 
 Not everything has a switch: **Vorssaint** (app switcher, window snapping,
-scroll invert, volume mixer, auto-quit, dynamic island), **MonitorControl** and
+scroll invert, volume mixer, monitor speakers, auto-quit, dynamic island) and
 **Maccy** are part of the default cask set and are always installed and
 configured — see [Homebrew casks](#homebrew-casks-casks) and
 [macOS keyboard layer](#macos-keyboard-layer-keybinds).
@@ -124,11 +124,11 @@ export DEVENV_KARABINER=1 DEVENV_CLEANSHOT=1
 `PATH="$(brew --prefix node@22)/bin:$PATH" npx electron-forge make`).
 
 ### Homebrew casks (`casks`)
-`ghostty`, `maccy`, `monitorcontrol` (media keys → external-monitor
-brightness/volume over DDC), `vorssaint` (all-in-one menu-bar toolkit — its
-modules replace **AltTab** (app switcher), **Rectangle** (window snapping) and
-**Mos** (external-mouse scroll invert), and add a per-app volume mixer; modules,
-settings and snap shortcuts are pre-enabled by setup via `defaults`, only the
+`ghostty`, `maccy`, `vorssaint` (all-in-one menu-bar toolkit — its
+modules replace **AltTab** (app switcher), **Rectangle** (window snapping),
+**Mos** (external-mouse scroll invert) and **MonitorControl** (volume keys →
+external-monitor speakers over DDC), and add a per-app volume mixer; modules,
+settings and snap shortcuts come from its settings file, only the
 Accessibility grant is manual), `visual-studio-code`,
 `google-chrome`, `whatsapp`, `transmission`, `vlc`, `macdroid`,
 `adobe-acrobat-reader`.
@@ -172,16 +172,16 @@ clipboard — the Windows key sits where Option is on a Mac) and installing a
 LaunchAgent so **Maccy starts at login** (a global hotkey is dead if its app
 isn't running — installing the cask alone doesn't auto-launch it), keeping
 **Vorssaint** (menu-bar toolkit — app switcher, window snapping, scroll-invert,
-volume mixer; modules and settings from its [settings file](#dotfiles-symlinked-from-dotfiles), Accessibility granted by hand) and
-**MonitorControl** (external-monitor DDC volume — brightness keys left native,
-DDC reads off for external displays to avoid Apple-Silicon 0/max jumps) alive at
-login the same way, binding
+volume mixer, monitor speakers; modules and settings from its [settings file](#dotfiles-symlinked-from-dotfiles), Accessibility granted by hand) alive at
+login the same way, retiring **MonitorControl** on machines an older setup gave
+it (Vorssaint 3.4.4+ drives monitor speakers itself; setup removes its login
+agent and uninstalls the cask, and keeps it while Vorssaint is older), binding
 **screenshot to `Option+Shift+S`** (the Windows `Win+Shift+S` — CleanShot X if
 opted in / installed, otherwise the built-in macOS "copy selected area to
 clipboard"; see [CleanShot X is opt-in](#cleanshot-x-is-opt-in)),
 plus a printed checklist of the one-time
-GUI permission grants that can't be scripted (Vorssaint / Maccy /
-MonitorControl, and — when opted in — Karabiner).
+GUI permission grants that can't be scripted (Vorssaint / Maccy, and — when
+opted in — Karabiner).
 
 ### Karabiner is opt-in
 
